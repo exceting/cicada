@@ -18,10 +18,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class AnnoProcessor extends AbstractProcessor {
@@ -79,27 +76,38 @@ public class AnnoProcessor extends AbstractProcessor {
         for (TypeElement t : annotations) {
             for (Element e : roundEnv.getElementsAnnotatedWith(t)) {
 
-                TreePath treePath = trees.getPath(e);
-                CompilationUnitTree unitTree = treePath.getCompilationUnit();
-                List<JCTree.JCImport> imports = (List<JCTree.JCImport>) unitTree.getImports();
-                JCTree.JCClassDecl classDecl = (JCTree.JCClassDecl) javacTrees.getTree(e);
-                List<JCTree.JCAnnotation> annos = classDecl.mods.annotations;
+                final TreePath treePath = trees.getPath(e);
+                final CompilationUnitTree unitTree = treePath.getCompilationUnit();
+                final List<JCTree.JCImport> imports = (List<JCTree.JCImport>) unitTree.getImports();
+                final JCTree.JCClassDecl classDecl = (JCTree.JCClassDecl) javacTrees.getTree(e);
+                final List<JCTree> defs = classDecl.defs; // Methods and fields
+                final List<JCTree.JCAnnotation> annos = classDecl.mods.annotations; // All annotations of this Class
 
-                String logObjName;
-
-                List<String> importClasses = imports.stream()
+                final List<String> importClasses = imports.stream()
                         .map(imp -> imp.qualid.type.toString())
                         .collect(Collectors.toList());
 
-                List<String> annoClasses = annos.stream()
+                final List<String> annoClasses = annos.stream()
                         .map(imp -> imp.annotationType.type.toString())
                         .collect(Collectors.toList());
 
+                List<String> slf4jObjs = defs.stream()
+                        .filter(def -> def instanceof JCTree.JCVariableDecl)
+                        .map(def -> (JCTree.JCVariableDecl) def)
+                        .filter(def -> SLF4J_PACK.equals(def.getType().type.toString()))
+                        .map(def -> def.getName().toString())
+                        .collect(Collectors.toList());
+
+                String logObj;
                 // Support lombok
+                if (importClasses.contains(LOMBOK_PACK) && annoClasses.contains(LOMBOK_PACK)) {
+                    logObj = "log";
+                } else if (importClasses.contains(SLF4J_PACK) && slf4jObjs.size() > 0) {
+                    logObj = slf4jObjs.get(0); // Default to use the first one.
+                } else { // Else, new slf4j logger object.
 
+                }
 
-
-                List<JCTree> defs = classDecl.defs; // Methods and fields
 
                 // Filter out methods with @LogTrace annotations and process them
                 defs.stream().filter(def -> def instanceof JCTree.JCMethodDecl)

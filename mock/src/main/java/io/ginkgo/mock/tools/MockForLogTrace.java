@@ -2,6 +2,8 @@ package io.ginkgo.mock.tools;
 
 import io.ginkgo.tools.logtrace.annos.LogTrace;
 import io.ginkgo.tools.logtrace.annos.Slf4jCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.beans.JavaBean;
 
@@ -12,6 +14,8 @@ import java.beans.JavaBean;
 public class MockForLogTrace {
 
     private static final String v = "xxxfx";
+
+    private Logger logger = LoggerFactory.getLogger(MockForLogTrace.class);
 
     public static void main(String[] args) {
         MockForLogTrace m = new MockForLogTrace();
