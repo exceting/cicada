@@ -1,0 +1,53 @@
+apply from: 'libs.gradle'
+
+allprojects {
+    apply plugin: 'idea'
+
+    repositories {
+        mavenCentral()
+        maven { url "https://repo1.maven.org/maven2/" }
+    }
+
+    // print all dependencies in multi-module project
+    // usage: './gradlew printAllDependencies'
+    task printAllDependencies(type: DependencyReportTask) {}
+}
+
+configure(subprojects) { project ->
+    project.pluginManager.withPlugin('java', {
+        project.sourceSets.main.resources {
+            srcDirs 'src/main/resources', 'src/main/java'
+        }
+    })
+
+    pluginManager.withPlugin('java', {
+        processResources {
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+        def libP = [':tools']
+        def isLib = libP.any { p ->
+            path.startsWith(p)
+        }
+        tasks.withType(JavaCompile) {
+            sourceCompatibility = isLib ? 1.8 : 11
+            targetCompatibility = isLib ? 1.8 : 11
+            options.encoding = 'UTF-8'
+        }
+    })
+}
+
+subprojects {
+    buildscript {
+        repositories {
+            mavenCentral()
+            maven { url "https://repo1.maven.org/maven2/" }
+            maven { url "https://plugins.gradle.org/m2" }
+        }
+
+        dependencies {
+            classpath libs["gradle-lombok"]
+            classpath libs["errorprone-gradle"]
+        }
+    }
+}
+
