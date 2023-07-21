@@ -1,4 +1,4 @@
-package io.ginkgo.tools.logtrace.annos;
+package io.cicada.tools.logtrace.annos;
 
 import java.lang.annotation.*;
 

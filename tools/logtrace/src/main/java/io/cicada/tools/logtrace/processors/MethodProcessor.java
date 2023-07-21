@@ -1,13 +1,24 @@
-package io.ginkgo.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors;
 
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 
-public class MethodProcessor {
+public class MethodProcessor extends TreeProcessor {
 
-    public static void process(TreeMaker treeMaker, Names names, JCTree.JCMethodDecl methodDecl) {
+
+    MethodProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+        super(factory, javacTrees, treeMaker, names);
+    }
+
+    @Override
+    public void process(JCTree jcTree) {
+        if (!(jcTree instanceof JCTree.JCMethodDecl)) {
+            return;
+        }
+        JCTree.JCMethodDecl methodDecl = (JCTree.JCMethodDecl) jcTree;
         JCTree.JCBlock methodBody = methodDecl.body;
         List<JCTree.JCStatement> statements = methodBody.stats;
 
@@ -33,11 +44,10 @@ public class MethodProcessor {
         methodBody.stats.forEach(s -> {
             switch (s.getKind()) {
                 case IF:
-                    IfProcessor.process(treeMaker, names, s);
+                    factory.get(ProcessorFactory.Kind.IF_STATEMENT).process(s);
                     break;
                 default:
             }
         });
     }
-
 }

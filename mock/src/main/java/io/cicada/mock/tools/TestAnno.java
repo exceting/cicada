@@ -1,4 +1,4 @@
-package io.ginkgo.mock.tools;
+package io.cicada.mock.tools;
 
 import java.lang.annotation.*;
 
