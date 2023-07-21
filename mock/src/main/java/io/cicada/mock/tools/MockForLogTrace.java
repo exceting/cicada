@@ -45,6 +45,14 @@ public class MockForLogTrace {
         int a = 1;
         int b = 2;
         int add = 0;
+
+        if (add == 3) {
+            System.out.println("233333333");
+        } else if (add == 4) {
+            System.out.println("4444444");
+        } else {
+            System.out.println("555555");
+        }
     }
 
     private boolean isHid() {
