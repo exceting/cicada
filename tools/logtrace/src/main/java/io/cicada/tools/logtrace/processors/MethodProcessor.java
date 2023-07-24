@@ -5,6 +5,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
+import io.cicada.tools.logtrace.AnnoProcessor;
+import org.graalvm.compiler.debug.Indent;
 
 public class MethodProcessor extends TreeProcessor {
 
@@ -28,19 +30,24 @@ public class MethodProcessor extends TreeProcessor {
                                 treeMaker.Ident(names.fromString("a")),
                                 treeMaker.Ident(names.fromString("b")))));
 
-        // Method invocation
-        JCTree.JCFieldAccess accessOut = treeMaker.Select(treeMaker.Ident(names.fromString("System")),
-                names.fromString("out")); // Access System.out
-        JCTree.JCFieldAccess accessPrintln = treeMaker.Select(accessOut, names.fromString("println")); // Access System.out.println
+        AnnoProcessor.GlobalConfig globalConfig = AnnoProcessor.config.get();
+        AnnoProcessor.GlobalConfig.MethodConfig methodConfig = globalConfig.getMethodConfigMap().get(jcTree);
+        JCTree.JCIdent logObj = treeMaker.Ident(names.fromString(globalConfig.getLogIdentName()));
 
-        JCTree.JCExpressionStatement invocation = treeMaker.Exec(treeMaker.Apply(null,
-                accessPrintln, List.of(treeMaker.Ident(names.fromString("add"))))); // Apply System.out.println(add);
+        StringBuilder logMsg = new StringBuilder(PREFIX);
+        logMsg.append("Method ").append(methodDecl.getName()).append(" invoked!");
+        // Get args.
+        List<JCTree.JCVariableDecl> params = methodDecl.getParameters();
+        if (params != null && params.size() > 0) {
+            params.forEach(p -> {
+                System.out.println("参数：" + p.getName().toString() + "      参数类型：" + p.sym.owner);
+            });
+        }
 
-        methodBody.stats = statements.append(exec).append(invocation);
+        JCTree.JCExpressionStatement logTrace = treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(logObj, getSlf4jMethod(methodConfig.getTraceLevel())),
+                List.of(treeMaker.Literal("xxxxxddfddd"))));
 
-        methodBody.stats.forEach(s -> {
-            System.out.println("######     " + s.pos + "     " + s);
-        });
+        methodBody.stats = statements.append(exec).append(logTrace);
         methodBody.stats.forEach(s -> {
             switch (s.getKind()) {
                 case IF:

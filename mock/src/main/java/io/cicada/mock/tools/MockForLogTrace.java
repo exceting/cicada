@@ -2,8 +2,10 @@ package io.cicada.mock.tools;
 
 import io.cicada.tools.logtrace.annos.LogTrace;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import org.slf4j.event.Level;
 
 import java.beans.JavaBean;
+import java.util.List;
 
 @TestAnno
 @JavaBean
@@ -15,13 +17,13 @@ public class MockForLogTrace {
 
     public static void main(String[] args) {
         MockForLogTrace m = new MockForLogTrace();
-        m.testIf();
+        m.testIf(1, null);
     }
 
     static final int VV = 5;
 
-    @LogTrace
-    private void testIf() {
+    @LogTrace(exceptionLog = true, traceLoop = true, traceLevel = Level.INFO)
+    private void testIf(Integer age, List<Integer> names) {
         int i = 0;
         if (i == 0) { // 变量
             System.out.println("cccccc");

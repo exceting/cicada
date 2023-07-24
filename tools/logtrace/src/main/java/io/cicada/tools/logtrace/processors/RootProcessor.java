@@ -6,6 +6,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
+import io.cicada.tools.logtrace.AnnoProcessor;
 
 import javax.lang.model.element.Element;
 import java.util.HashSet;
@@ -57,13 +58,10 @@ public class RootProcessor extends TreeProcessor {
 
         String logIdentName;
         if (importClasses.contains(LOMBOK_PACK) && annoClasses.contains(LOMBOK_PACK)) { // Support lombok
-
             logIdentName = "log";
         } else if (importClasses.contains(SLF4J_PACK) && slf4jObjs.size() > 0) { // Local log obj.
-
             logIdentName = slf4jObjs.get(0); // Default to use the 1st one.
         } else { // Else, new slf4j logger object.
-
             logIdentName = "trace_logger";
             int num = 0;
             while (allExistFieldNames.contains(logIdentName)) { // Preventing naming conflicts.
@@ -73,8 +71,10 @@ public class RootProcessor extends TreeProcessor {
 
             // Import Logger and LoggerFactory
             factory.get(ProcessorFactory.Kind.IMPORT).process(e,
-                    treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")), names.fromString("Logger")), false),
-                    treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")), names.fromString("LoggerFactory")), false));
+                    treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")),
+                            names.fromString("Logger")), false),
+                    treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")),
+                            names.fromString("LoggerFactory")), false));
 
             // LoggerFactory.getLogger(MockForLogTrace.class)
             JCTree.JCMethodInvocation getLoggerInvoke = treeMaker.Apply(null, treeMaker.Select(
@@ -83,11 +83,14 @@ public class RootProcessor extends TreeProcessor {
                             treeMaker.Ident(names.fromString(classDecl.getSimpleName().toString())),
                             names.fromString("class"))));
 
-            JCTree.JCVariableDecl loggerVariableDecl = treeMaker.VarDef(treeMaker.Modifiers(Flags.STATIC | Flags.FINAL, com.sun.tools.javac.util.List.nil()),
+            JCTree.JCVariableDecl loggerVariableDecl = treeMaker.VarDef(
+                    treeMaker.Modifiers(Flags.STATIC | Flags.FINAL, com.sun.tools.javac.util.List.nil()),
                     names.fromString(logIdentName), treeMaker.Ident(names.fromString("Logger")), getLoggerInvoke);
 
             classDecl.defs = classDecl.defs.append(loggerVariableDecl);
-            factory.get(ProcessorFactory.Kind.CLASS_DECL).process(classDecl);
         }
+        // Init config
+        AnnoProcessor.config.set(new AnnoProcessor.GlobalConfig(logIdentName));
+        factory.get(ProcessorFactory.Kind.CLASS_DECL).process(classDecl);
     }
 }
