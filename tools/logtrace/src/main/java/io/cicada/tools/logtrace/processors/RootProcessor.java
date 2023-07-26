@@ -69,28 +69,25 @@ public class RootProcessor extends TreeProcessor {
                 num++;
             }
 
-            // Import Logger and LoggerFactory
+            // Import Logger and LoggerFactory classes.
             factory.get(ProcessorFactory.Kind.IMPORT).process(e,
                     treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")),
                             names.fromString("Logger")), false),
                     treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")),
                             names.fromString("LoggerFactory")), false));
 
-            // LoggerFactory.getLogger(MockForLogTrace.class)
-            JCTree.JCMethodInvocation getLoggerInvoke = treeMaker.Apply(null, treeMaker.Select(
-                            treeMaker.Ident(names.fromString("LoggerFactory")), names.fromString("getLogger")),
-                    com.sun.tools.javac.util.List.of(treeMaker.Select(
-                            treeMaker.Ident(names.fromString(classDecl.getSimpleName().toString())),
-                            names.fromString("class"))));
-
-            JCTree.JCVariableDecl loggerVariableDecl = treeMaker.VarDef(
+            classDecl.defs = classDecl.defs.append(treeMaker.VarDef(
                     treeMaker.Modifiers(Flags.STATIC | Flags.FINAL, com.sun.tools.javac.util.List.nil()),
-                    names.fromString(logIdentName), treeMaker.Ident(names.fromString("Logger")), getLoggerInvoke);
-
-            classDecl.defs = classDecl.defs.append(loggerVariableDecl);
+                    names.fromString(logIdentName), treeMaker.Ident(names.fromString("Logger")),
+                    treeMaker.Apply(null, treeMaker.Select(
+                                    treeMaker.Ident(names.fromString("LoggerFactory")),
+                                    names.fromString("getLogger")),
+                            com.sun.tools.javac.util.List.of(treeMaker.Select(
+                                    treeMaker.Ident(names.fromString(classDecl.getSimpleName().toString())),
+                                    names.fromString("class"))))));
         }
         // Init config
-        AnnoProcessor.config.set(new AnnoProcessor.GlobalConfig(logIdentName));
+        AnnoProcessor.currentLogIdentName.set(logIdentName);
         factory.get(ProcessorFactory.Kind.CLASS_DECL).process(classDecl);
     }
 }

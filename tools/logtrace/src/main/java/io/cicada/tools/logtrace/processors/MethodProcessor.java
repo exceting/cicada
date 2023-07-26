@@ -6,7 +6,9 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.AnnoProcessor;
-import org.graalvm.compiler.debug.Indent;
+
+import java.util.LinkedList;
+import java.util.Map;
 
 public class MethodProcessor extends TreeProcessor {
 
@@ -22,39 +24,33 @@ public class MethodProcessor extends TreeProcessor {
         }
         JCTree.JCMethodDecl methodDecl = (JCTree.JCMethodDecl) jcTree;
         JCTree.JCBlock methodBody = methodDecl.body;
-        List<JCTree.JCStatement> statements = methodBody.stats;
 
-        JCTree.JCExpressionStatement exec = treeMaker.Exec(
-                treeMaker.Assign(treeMaker.Ident(names.fromString("add")),
-                        treeMaker.Binary(JCTree.Tag.PLUS,
-                                treeMaker.Ident(names.fromString("a")),
-                                treeMaker.Ident(names.fromString("b")))));
+        AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
 
-        AnnoProcessor.GlobalConfig globalConfig = AnnoProcessor.config.get();
-        AnnoProcessor.GlobalConfig.MethodConfig methodConfig = globalConfig.getMethodConfigMap().get(jcTree);
-        JCTree.JCIdent logObj = treeMaker.Ident(names.fromString(globalConfig.getLogIdentName()));
-
-        StringBuilder logMsg = new StringBuilder(PREFIX);
-        logMsg.append("Method ").append(methodDecl.getName()).append(" invoked!");
+        StringBuilder logMsg = new StringBuilder(String.format(PREFIX, methodConfig.getMethodName(), "METHOD_START"));
+        logMsg.append("invoked!");
         // Get args.
         List<JCTree.JCVariableDecl> params = methodDecl.getParameters();
+        LinkedList<JCTree.JCExpression> logArgs = new LinkedList<>();
         if (params != null && params.size() > 0) {
-            params.forEach(p -> {
-                System.out.println("参数：" + p.getName().toString() + "      参数类型：" + p.sym.owner);
-            });
+            Map<String, JCTree.JCExpression> argMap = argMap(params);
+            if (argMap != null && argMap.size() > 0) {
+                logMsg.append(" Params: ");
+                argMap.forEach((k, v) -> {
+                    logMsg.append(k).append(" = ").append("{}, ");
+                    logArgs.add(v);
+                });
+            }
         }
 
-        JCTree.JCExpressionStatement logTrace = treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(logObj, getSlf4jMethod(methodConfig.getTraceLevel())),
-                List.of(treeMaker.Literal("xxxxxddfddd"))));
+        logArgs.addFirst(treeMaker.Literal(logMsg.toString()));
+        // Push the new code into stack.
+        methodConfig.getAttachStack().push(treeMaker.Exec(treeMaker.Apply(List.nil(),
+                treeMaker.Select(treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
+                        getSlf4jMethod(methodConfig.getTraceLevel())), List.from(logArgs))));
 
-        methodBody.stats = statements.append(exec).append(logTrace);
-        methodBody.stats.forEach(s -> {
-            switch (s.getKind()) {
-                case IF:
-                    factory.get(ProcessorFactory.Kind.IF_STATEMENT).process(s);
-                    break;
-                default:
-            }
-        });
+        //methodBody.stats = attachCode(methodBody.stats, logTrace, offset);
+
+        factory.get(ProcessorFactory.Kind.BLOCK).process(methodBody);
     }
 }

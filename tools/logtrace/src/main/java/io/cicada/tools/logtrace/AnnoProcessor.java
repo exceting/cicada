@@ -17,16 +17,10 @@ import javax.lang.model.element.Element;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class AnnoProcessor extends AbstractProcessor {
     private ProcessorFactory factory;
 
-    /**
-     * 初始化处理器
-     *
-     * @param processingEnv 提供了一系列的实用工具
-     */
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
@@ -36,7 +30,6 @@ public class AnnoProcessor extends AbstractProcessor {
                 TreeMaker.instance(context),
                 Names.instance(context));
     }
-
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -67,43 +60,42 @@ public class AnnoProcessor extends AbstractProcessor {
         return true;
     }
 
-    public static final ThreadLocal<GlobalConfig> config = new ThreadLocal<>();
+    public static final ThreadLocal<String> currentLogIdentName = new ThreadLocal<>();
+    public static final ThreadLocal<MethodConfig> currentMethodConfig = new ThreadLocal<>();
 
-    public static class GlobalConfig {
-        private final String logIdentName;
+    public static class MethodConfig {
+        private String methodName;
+        private final boolean exceptionLog;
+        private final boolean traceLoop;
+        private final Level traceLevel;
 
-        private final Map<JCTree.JCMethodDecl, MethodConfig> methodConfigMap = new ConcurrentHashMap<>();
+        private final Stack<JCTree> attachStack = new Stack<>(); // Use to attach code.
 
-        public GlobalConfig(String logIdentName) {
-            this.logIdentName = logIdentName;
+        public MethodConfig(String methodName, boolean exceptionLog, boolean traceLoop, Level traceLevel) {
+            this.methodName = methodName;
+            this.exceptionLog = exceptionLog;
+            this.traceLoop = traceLoop;
+            this.traceLevel = traceLevel;
         }
 
-        public String getLogIdentName() {
-            return logIdentName;
+        public boolean isExceptionLog() {
+            return exceptionLog;
         }
 
-        public Map<JCTree.JCMethodDecl, MethodConfig> getMethodConfigMap() {
-            return methodConfigMap;
+        public Level getTraceLevel() {
+            return traceLevel;
         }
 
-        public static class MethodConfig {
-            private final boolean exceptionLog;
-            private final boolean traceLoop;
-            private final Level traceLevel;
+        public boolean isTraceLoop() {
+            return traceLoop;
+        }
 
-            public MethodConfig(boolean exceptionLog, boolean traceLoop, Level traceLevel) {
-                this.exceptionLog = exceptionLog;
-                this.traceLoop = traceLoop;
-                this.traceLevel = traceLevel;
-            }
+        public Stack<JCTree> getAttachStack() {
+            return attachStack;
+        }
 
-            public boolean isExceptionLog() {
-                return exceptionLog;
-            }
-
-            public Level getTraceLevel() {
-                return traceLevel;
-            }
+        public String getMethodName() {
+            return methodName;
         }
     }
 }

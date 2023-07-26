@@ -17,43 +17,54 @@ public class MockForLogTrace {
 
     public static void main(String[] args) {
         MockForLogTrace m = new MockForLogTrace();
-        m.testIf(1, null);
+        m.testException();
+        m.testIf(1, null, new int[]{1, 2}, null, new EmptyInterface() {
+        });
     }
 
     static final int VV = 5;
 
-    @LogTrace(exceptionLog = true, traceLoop = true, traceLevel = Level.INFO)
-    private void testIf(Integer age, List<Integer> names) {
-        int i = 0;
-        if (i == 0) { // 变量
-            System.out.println("cccccc");
-        }
-        if (VV <= 5) { // 常量
-            System.out.println("hhhhhh");
-        }
+    // @LogTrace(traceLevel = Level.DEBUG)
+    private void testException() {
 
-        if (new Object() instanceof MockForLogTrace) { // instance of
-            System.out.println("uuuuuuuu");
-        }
+    }
 
-        if (isHid()) {
-            System.out.println("ppppppp");
-        }
+    @LogTrace(exceptionLog = true, traceLoop = true, traceLevel = Level.DEBUG)
+    private void testIf(Integer age, List<Integer> names, int[] as, List<String>[] lists, EmptyInterface emptyInterface) {
+        try {
+            int i = 0;
+            if (i == 0) { // 变量
+                System.out.println("cccccc");
+            }
+            if (VV <= 5) { // 常量
+                System.out.println("hhhhhh");
+            }
 
-        if (isHid2(true)) {
-            System.out.println("ooooooo");
-        }
+            if (new Object() instanceof MockForLogTrace) { // instance of
+                System.out.println("uuuuuuuu");
+            }
 
-        int a = 1;
-        int b = 2;
-        int add = 0;
+            if (isHid()) {
+                System.out.println("ppppppp");
+            }
 
-        if (add == 3) {
-            System.out.println("233333333");
-        } else if (add == 4) {
-            System.out.println("4444444");
-        } else {
-            System.out.println("555555");
+            if (isHid2(true)) {
+                System.out.println("ooooooo");
+            }
+
+            int a = 1;
+            int b = 2;
+            int add = 0;
+
+            if (add == 3) {
+                System.out.println("233333333");
+            } else if (add == 4) {
+                System.out.println("4444444");
+            } else {
+                System.out.println("555555");
+            }
+        } catch (Exception e) {
+            // do nothing
         }
     }
 
