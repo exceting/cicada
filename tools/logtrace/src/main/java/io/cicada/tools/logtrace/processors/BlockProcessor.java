@@ -6,6 +6,10 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.AnnoProcessor;
 
+/**
+ * A processor for handling BLOCK statement.
+ * eg: {}
+ */
 public class BlockProcessor extends TreeProcessor {
 
     BlockProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
