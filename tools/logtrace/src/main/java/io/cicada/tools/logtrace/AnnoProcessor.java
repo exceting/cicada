@@ -6,6 +6,7 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Position;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
 import org.slf4j.event.Level;
@@ -60,18 +61,42 @@ public class AnnoProcessor extends AbstractProcessor {
         return true;
     }
 
+    /**
+     * The code line map.
+     * Refresh in {@link io.cicada.tools.logtrace.processors.RootProcessor}
+     */
+    public static final ThreadLocal<Position.LineMap> lineMap = new ThreadLocal<>();
+
+    /**
+     * The log obj ident.
+     * Refresh in {@link io.cicada.tools.logtrace.processors.RootProcessor}
+     */
     public static final ThreadLocal<String> currentLogIdentName = new ThreadLocal<>();
+
+    /**
+     * The method annotation config.
+     * Refresh in {@link io.cicada.tools.logtrace.processors.ClassProcessor}
+     */
     public static final ThreadLocal<MethodConfig> currentMethodConfig = new ThreadLocal<>();
 
     public static class MethodConfig {
-        private String methodName;
+        private final String methodName;
         private final boolean exceptionLog;
         private final boolean traceLoop;
-        private final Level traceLevel;
 
-        private final Stack<JCTree> attachStack = new Stack<>(); // Use to attach code.
+        /**
+         * Slf4j log level.
+         * See: {@link org.slf4j.event.Level}
+         */
+        private final String traceLevel;
 
-        public MethodConfig(String methodName, boolean exceptionLog, boolean traceLoop, Level traceLevel) {
+        private final Stack<JCTree.JCBlock> blockStack = new Stack<>(); // Method block stack.
+        private final Stack<JCTree.JCStatement> attachStack = new Stack<>(); // Use to attach code to 1st line of block.
+
+        public MethodConfig(String methodName,
+                            boolean exceptionLog,
+                            boolean traceLoop,
+                            String traceLevel) {
             this.methodName = methodName;
             this.exceptionLog = exceptionLog;
             this.traceLoop = traceLoop;
@@ -82,7 +107,7 @@ public class AnnoProcessor extends AbstractProcessor {
             return exceptionLog;
         }
 
-        public Level getTraceLevel() {
+        public String getTraceLevel() {
             return traceLevel;
         }
 
@@ -90,12 +115,16 @@ public class AnnoProcessor extends AbstractProcessor {
             return traceLoop;
         }
 
-        public Stack<JCTree> getAttachStack() {
+        public Stack<JCTree.JCStatement> getAttachStack() {
             return attachStack;
         }
 
         public String getMethodName() {
             return methodName;
+        }
+
+        public Stack<JCTree.JCBlock> getBlockStack() {
+            return blockStack;
         }
     }
 }

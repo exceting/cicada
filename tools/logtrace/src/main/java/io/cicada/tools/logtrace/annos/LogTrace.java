@@ -14,7 +14,7 @@ public @interface LogTrace {
 
     /**
      * If true, catch and print exception.
-     * If the original method has already caught the exception, it will be invalid.
+     * If the original method has already caught and handled the exception, it will be invalid.
      */
     boolean exceptionLog() default false;
 
@@ -30,5 +30,10 @@ public @interface LogTrace {
      * Default: TRACE
      */
     Level traceLevel() default Level.TRACE;
+
+    /**
+     * Log language, 0: English, 1: 简体汉语, 2: 繁體漢語, 3: 日本語.
+     */
+    int language() default 0;
 
 }

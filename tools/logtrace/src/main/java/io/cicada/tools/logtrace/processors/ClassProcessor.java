@@ -6,7 +6,6 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.AnnoProcessor;
 import io.cicada.tools.logtrace.annos.LogTrace;
-import org.slf4j.event.Level;
 
 import java.util.Objects;
 
@@ -15,7 +14,7 @@ public class ClassProcessor extends TreeProcessor {
     static final String LOG_TRACE = LogTrace.class.getName();
 
     static final String LOG_TRACE_EXCEPTION_LOG = "exceptionLog";
-    static final String LOG_TRACE_LOOP = "traceLoop";
+    static final String LOG_TRACE_RETURN_LOG = "returnLog";
     static final String LOG_TRACE_LEVEL = "traceLevel";
 
     ClassProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
@@ -38,8 +37,8 @@ public class ClassProcessor extends TreeProcessor {
                             continue;
                         }
                         boolean exceptionLog = false;
-                        boolean traceLoop = false;
-                        Level level = Level.TRACE;
+                        boolean returnLog = true;
+                        String level = "Level.TRACE";
                         if (anno.getArguments() != null && anno.getArguments().size() > 0) {
                             for (JCTree.JCExpression arg : anno.getArguments()) {
                                 if (!(arg instanceof JCTree.JCAssign)) {
@@ -49,28 +48,11 @@ public class ClassProcessor extends TreeProcessor {
                                 if (LOG_TRACE_EXCEPTION_LOG.equals(assign.lhs.toString())) {
                                     exceptionLog = "true".equals(assign.rhs.toString());
                                 }
-                                if (LOG_TRACE_LOOP.equals(assign.lhs.toString())) {
-                                    traceLoop = "true".equals(assign.rhs.toString());
+                                if (LOG_TRACE_RETURN_LOG.equals(assign.lhs.toString())) {
+                                    returnLog = "true".equals(assign.rhs.toString());
                                 }
                                 if (LOG_TRACE_LEVEL.equals(assign.lhs.toString())) {
-                                    switch (assign.rhs.toString()) {
-                                        case "Level.ERROR":
-                                            level = Level.ERROR;
-                                            break;
-                                        case "Level.WARN":
-                                            level = Level.WARN;
-                                            break;
-                                        case "Level.INFO":
-                                            level = Level.INFO;
-                                            break;
-                                        case "Level.DEBUG":
-                                            level = Level.DEBUG;
-                                            break;
-                                        case "Level.TRACE":
-                                            level = Level.TRACE;
-                                            break;
-                                        default:
-                                    }
+                                    level = assign.rhs.toString();
                                 }
                             }
                             AnnoProcessor.currentMethodConfig.set(new AnnoProcessor.MethodConfig(
@@ -79,7 +61,7 @@ public class ClassProcessor extends TreeProcessor {
                                             classDecl.getSimpleName(),
                                             def.getName().toString()),
                                     exceptionLog,
-                                    traceLoop,
+                                    returnLog,
                                     level));
                             factory.get(ProcessorFactory.Kind.METHOD_DECL).process(def);
                         }

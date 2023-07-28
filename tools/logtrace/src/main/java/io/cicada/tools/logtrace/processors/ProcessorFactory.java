@@ -24,6 +24,10 @@ public class ProcessorFactory {
         processorMap.put(Kind.CLASS_DECL, new ClassProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Kind.METHOD_DECL, new MethodProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Kind.TRY, new TryProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Kind.FOR_LOOP, new ForLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Kind.ENHANCED_FOR_LOOP, new EnhancedForLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Kind.WHILE_LOOP, new WhileLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Kind.DO_WHILE_LOOP, new DoWhileLoopProcessor(this, javacTrees, treeMaker, names));
     }
 
     public TreeProcessor get(Kind kind) {
@@ -38,6 +42,10 @@ public class ProcessorFactory {
         IF_COND(),
         CLASS_DECL(),
         METHOD_DECL(),
-        TRY()
+        TRY(),
+        FOR_LOOP(),
+        ENHANCED_FOR_LOOP(),
+        WHILE_LOOP(),
+        DO_WHILE_LOOP()
     }
 }

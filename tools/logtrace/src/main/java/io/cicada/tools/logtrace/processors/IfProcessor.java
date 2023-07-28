@@ -5,6 +5,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
+import com.sun.tools.javac.util.Position;
 import io.cicada.tools.logtrace.AnnoProcessor;
 
 /**
@@ -30,13 +31,16 @@ public class IfProcessor extends TreeProcessor {
             return;
         }
         AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
+        Position.LineMap lineMap = AnnoProcessor.lineMap.get();
         StringBuilder logMsg = new StringBuilder();
         if (jcTree instanceof JCTree.JCIf) {
             JCTree.JCIf jcIf = (JCTree.JCIf) jcTree;
-            // TODO The cond may should be processed in detail.
+            // TODO The cond may should be processed.
             // factory.get(ProcessorFactory.Kind.IF_COND).process(jcIf.cond);
             attachCodeToStack(methodConfig, logMsg
-                    .append(String.format(PREFIX, methodConfig.getMethodName(), ProcessorFactory.Kind.IF_STATEMENT))
+                    .append(String.format(PREFIX, methodConfig.getMethodName(),
+                            ProcessorFactory.Kind.IF_STATEMENT,
+                            lineMap.getLineNumber(jcIf.getStartPosition())))
                     .append("The condition: ")
                     .append(jcIf.cond)
                     .append(" is TRUE!")
@@ -45,7 +49,9 @@ public class IfProcessor extends TreeProcessor {
             process(jcIf.elsepart);
         } else {
             attachCodeToStack(methodConfig, logMsg
-                    .append(String.format(PREFIX, methodConfig.getMethodName(), ProcessorFactory.Kind.IF_STATEMENT))
+                    .append(String.format(PREFIX, methodConfig.getMethodName(),
+                            ProcessorFactory.Kind.IF_STATEMENT,
+                            lineMap.getLineNumber(jcTree.getStartPosition())))
                     .append("The condition: ")
                     .append("ELSE")
                     .append(" is TRUE!")

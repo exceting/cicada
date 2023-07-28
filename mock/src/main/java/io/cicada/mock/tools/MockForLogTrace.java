@@ -5,6 +5,7 @@ import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import org.slf4j.event.Level;
 
 import java.beans.JavaBean;
+import java.util.ArrayList;
 import java.util.List;
 
 @TestAnno
@@ -32,6 +33,33 @@ public class MockForLogTrace {
     @LogTrace(exceptionLog = true, traceLoop = true, traceLevel = Level.DEBUG)
     private void testIf(Integer age, List<Integer> names, int[] as, List<String>[] lists, EmptyInterface emptyInterface) {
         try {
+            List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));
+            for (Integer i : is) {
+                if (i == 2) {
+                    System.out.println(i);
+                }
+            }
+
+            is.forEach(i -> {
+                System.out.println(i);
+            });
+
+            int aaa = 2;
+            while (aaa > 0) {
+                if (aaa == 1) {
+                    System.out.println(11111);
+                }
+                System.out.println(aaa--);
+            }
+
+            int t = 2;
+            do {
+                if (t == 1) {
+                    System.out.println(222);
+                }
+                t--;
+            } while (t > 0);
+
             int i = 0;
             if (i == 0) { // 变量
                 System.out.println("cccccc");
@@ -46,6 +74,9 @@ public class MockForLogTrace {
 
             if (isHid()) {
                 System.out.println("ppppppp");
+                if (isHid2(false)) {
+                    System.out.println("ooooooooo");
+                }
             }
 
             if (isHid2(true)) {
@@ -65,11 +96,22 @@ public class MockForLogTrace {
             }
         } catch (Exception e) {
             // do nothing
+            throw e;
         }
     }
 
     private boolean isHid() {
-        return true;
+        try {
+            try {
+                return true;
+            } catch (Exception e) {
+                System.out.println("第一个catch");
+                throw e;
+            }
+        } catch (Exception e) {
+            System.out.println("第二个catch");
+            throw e;
+        }
     }
 
     private boolean isHid2(boolean r) {

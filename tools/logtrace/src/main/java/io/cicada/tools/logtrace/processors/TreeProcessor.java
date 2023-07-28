@@ -4,15 +4,18 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Name;
-import org.slf4j.event.Level;
 
 import javax.lang.model.element.Element;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public abstract class TreeProcessor {
-    static final String PREFIX = "LOG_TRACE >>>>>> OUTPUT: [METHOD: %s][%s] ";
+    static final String PREFIX = "LOG_TRACE >>>>>> OUTPUT: [METHOD: %s][%s][LINE: %s] ";
     ProcessorFactory factory;
     JavacTrees javacTrees;
     TreeMaker treeMaker;
@@ -50,17 +53,17 @@ public abstract class TreeProcessor {
         return result;
     }
 
-    Name getSlf4jMethod(Level level) {
+    Name getSlf4jMethod(String level) {
         switch (level) {
-            case ERROR:
+            case "Level.ERROR":
                 return names.fromString("error");
-            case WARN:
+            case "Level.WARN":
                 return names.fromString("warn");
-            case INFO:
+            case "Level.INFO":
                 return names.fromString("info");
-            case DEBUG:
+            case "Level.DEBUG":
                 return names.fromString("debug");
-            case TRACE:
+            case "Level.TRACE":
                 return names.fromString("trace");
             default:
                 return null;
@@ -105,9 +108,7 @@ public abstract class TreeProcessor {
     }
 
     private JCTree.JCExpression getMethodInvokeExp(JCTree.JCIdent argIdent, String sizeMethodName) {
-        return treeMaker.Apply(com.sun.tools.javac.util.List.nil(),
-                treeMaker.Select(argIdent, names.fromString(sizeMethodName)),
-                com.sun.tools.javac.util.List.nil());
+        return treeMaker.Apply(List.nil(), treeMaker.Select(argIdent, names.fromString(sizeMethodName)), List.nil());
     }
 
     /**
@@ -118,16 +119,16 @@ public abstract class TreeProcessor {
      * @param offset   position of new code
      * @return The new method statements which contains new code.
      */
-    com.sun.tools.javac.util.List<JCTree.JCStatement> attachCode(com.sun.tools.javac.util.List<JCTree.JCStatement> stats,
-                                                                 JCTree.JCStatement attached,
-                                                                 int offset) {
-        return attachCode(stats, com.sun.tools.javac.util.List.of(attached), offset);
+    List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
+                                        JCTree.JCStatement attached,
+                                        int offset) {
+        return attachCode(stats, List.of(attached), offset);
     }
 
-    com.sun.tools.javac.util.List<JCTree.JCStatement> attachCode(com.sun.tools.javac.util.List<JCTree.JCStatement> stats,
-                                                                 com.sun.tools.javac.util.List<JCTree.JCStatement> attached,
-                                                                 int offset) {
-        List<JCTree.JCStatement> statements = new ArrayList<>();
+    List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
+                                        List<JCTree.JCStatement> attached,
+                                        int offset) {
+        ArrayList<JCTree.JCStatement> statements = new ArrayList<>();
         // before
         for (int i = 0; i < offset; i++) {
             statements.add(stats.get(i));
@@ -138,7 +139,7 @@ public abstract class TreeProcessor {
         for (int i = offset; i < stats.size(); i++) {
             statements.add(stats.get(i));
         }
-        return com.sun.tools.javac.util.List.from(statements);
+        return List.from(statements);
     }
 
     static ClassType getClassType(String className) { // FIXME Can't process inner class

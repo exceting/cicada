@@ -31,6 +31,7 @@ public class RootProcessor extends TreeProcessor {
     public void process(Element e) {
         final TreePath treePath = javacTrees.getPath(e);
         final JCTree.JCCompilationUnit unitTree = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
+        AnnoProcessor.lineMap.set(unitTree.getLineMap());
         final List<JCTree.JCImport> imports = unitTree.getImports();
         final JCTree.JCClassDecl classDecl = (JCTree.JCClassDecl) javacTrees.getTree(e);
         final List<JCTree.JCAnnotation> annos = classDecl.mods.annotations; // All annotations of this Class
@@ -57,7 +58,7 @@ public class RootProcessor extends TreeProcessor {
                 .collect(Collectors.toList());
 
         String logIdentName;
-        if (importClasses.contains(LOMBOK_PACK) && annoClasses.contains(LOMBOK_PACK)) { // Support lombok
+        if (importClasses.contains(LOMBOK_PACK) && annoClasses.contains(LOMBOK_PACK)) { // Support lombok.
             logIdentName = "log";
         } else if (importClasses.contains(SLF4J_PACK) && slf4jObjs.size() > 0) { // Local log obj.
             logIdentName = slf4jObjs.get(0); // Default to use the 1st one.
