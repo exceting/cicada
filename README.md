@@ -1,2 +1,2 @@
 # cicada
-Cicada, a Java microservices scaffold developed based on the OpenTelemetry protocol.
+A Java microservices scaffold developed based on the OpenTelemetry protocol.
