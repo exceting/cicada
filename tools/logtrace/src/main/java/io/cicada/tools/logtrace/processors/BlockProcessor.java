@@ -23,8 +23,6 @@ public class BlockProcessor extends TreeProcessor {
         }
         JCTree.JCBlock jcBlock = (JCTree.JCBlock) jcTree;
         AnnoProcessor.currentMethodConfig.get().getBlockStack().push(jcBlock);
-        JCTree.JCStatement newCode = AnnoProcessor.currentMethodConfig.get().getAttachStack().isEmpty()
-                ? null : AnnoProcessor.currentMethodConfig.get().getAttachStack().pop();
         if (jcBlock.getStatements() == null || jcBlock.getStatements().size() == 0) {
             return;
         }
@@ -35,21 +33,25 @@ public class BlockProcessor extends TreeProcessor {
                     break;
                 case TRY:
                     factory.get(ProcessorFactory.Kind.TRY).process(statement);
+                    break;
                 case FOR_LOOP:
                     factory.get(ProcessorFactory.Kind.FOR_LOOP).process(statement);
+                    break;
                 case WHILE_LOOP:
                     factory.get(ProcessorFactory.Kind.WHILE_LOOP).process(statement);
+                    break;
                 case DO_WHILE_LOOP:
                     factory.get(ProcessorFactory.Kind.DO_WHILE_LOOP).process(statement);
+                    break;
                 case ENHANCED_FOR_LOOP:
                     factory.get(ProcessorFactory.Kind.ENHANCED_FOR_LOOP).process(statement);
+                    break;
+                case VARIABLE:
+                    factory.get(ProcessorFactory.Kind.VARIABLE).process(statement);
+                    break;
                 default:
                     // do nothing
             }
-        }
-        if (newCode != null) {
-            // Add new code into the 1st line of current block.
-            jcBlock.stats = attachCode(jcBlock.stats, newCode, 0);
         }
         // Pop block.
         AnnoProcessor.currentMethodConfig.get().getBlockStack().pop();

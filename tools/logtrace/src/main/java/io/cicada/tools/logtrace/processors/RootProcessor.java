@@ -28,7 +28,8 @@ public class RootProcessor extends TreeProcessor {
     }
 
     @Override
-    public void process(Element e) {
+    public void process() {
+        Element e = AnnoProcessor.currentElement.get();
         final TreePath treePath = javacTrees.getPath(e);
         final JCTree.JCCompilationUnit unitTree = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
         AnnoProcessor.lineMap.set(unitTree.getLineMap());
@@ -71,7 +72,7 @@ public class RootProcessor extends TreeProcessor {
             }
 
             // Import Logger and LoggerFactory classes.
-            factory.get(ProcessorFactory.Kind.IMPORT).process(e,
+            factory.get(ProcessorFactory.Kind.IMPORT).process(
                     treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")),
                             names.fromString("Logger")), false),
                     treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")),

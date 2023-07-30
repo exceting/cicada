@@ -7,6 +7,7 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
+import io.cicada.tools.logtrace.AnnoProcessor;
 
 import javax.lang.model.element.Element;
 import java.util.stream.Collectors;
@@ -22,10 +23,10 @@ public class ImportProcessor extends TreeProcessor {
 
     // Import new classes for current Class
     @Override
-    public void process(Element e, JCTree... jcTrees) {
+    public void process(JCTree... jcTrees) {
         if (jcTrees != null) {
 
-            final TreePath treePath = javacTrees.getPath(e);
+            final TreePath treePath = javacTrees.getPath(AnnoProcessor.currentElement.get());
             final JCTree.JCCompilationUnit unitTree = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
 
             ListBuffer<JCTree> newDefs = new ListBuffer<>();
@@ -49,7 +50,5 @@ public class ImportProcessor extends TreeProcessor {
 
             unitTree.defs = List.from(newDefs);
         }
-
-
     }
 }

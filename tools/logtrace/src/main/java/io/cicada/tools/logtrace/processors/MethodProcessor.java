@@ -24,7 +24,6 @@ public class MethodProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCMethodDecl)) {
             return;
         }
-        System.out.println("@#@#@##@######");
         JCTree.JCMethodDecl methodDecl = (JCTree.JCMethodDecl) jcTree;
         JCTree.JCBlock methodBody = methodDecl.body;
 
@@ -51,13 +50,16 @@ public class MethodProcessor extends TreeProcessor {
                 lineMap.getLineNumber(methodBody.getStartPosition())) + "Start!";
         logArgs.addFirst(treeMaker.Literal(methodStart + logParams));
         methodConfig.getBlockStack().push(methodBody);
-        // Push the new code into stack.
         Name logObjName = names.fromString(AnnoProcessor.currentLogIdentName.get());
         Name slf4jMethodName = getSlf4jMethod(methodConfig.getTraceLevel());
-        methodConfig.getAttachStack().push(treeMaker.Exec(treeMaker.Apply(List.nil(),
-                treeMaker.Select(treeMaker.Ident(logObjName), slf4jMethodName), List.from(logArgs))));
+
+        AnnoProcessor.MethodConfig.NewCode startNewCode = new AnnoProcessor.MethodConfig.NewCode(0,
+                treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
+                        treeMaker.Ident(logObjName), slf4jMethodName), List.from(logArgs))));
 
         factory.get(ProcessorFactory.Kind.BLOCK).process(methodBody);
+
+        methodBody.stats = attachCode(methodBody.stats, startNewCode);
 
         // Add try-catch statement.
         if (methodConfig.isExceptionLog()) {

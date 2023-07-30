@@ -4,6 +4,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 
+import javax.lang.model.element.Element;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class ProcessorFactory {
         processorMap.put(Kind.ENHANCED_FOR_LOOP, new EnhancedForLoopProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Kind.WHILE_LOOP, new WhileLoopProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Kind.DO_WHILE_LOOP, new DoWhileLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Kind.VARIABLE, new VariableProcessor(this, javacTrees, treeMaker, names));
     }
 
     public TreeProcessor get(Kind kind) {
@@ -46,6 +48,7 @@ public class ProcessorFactory {
         FOR_LOOP(),
         ENHANCED_FOR_LOOP(),
         WHILE_LOOP(),
-        DO_WHILE_LOOP()
+        DO_WHILE_LOOP(),
+        VARIABLE()
     }
 }

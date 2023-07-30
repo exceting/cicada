@@ -7,9 +7,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Name;
+import io.cicada.tools.logtrace.AnnoProcessor;
 
-import javax.lang.model.element.Element;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -21,15 +20,23 @@ public abstract class TreeProcessor {
     TreeMaker treeMaker;
     Names names;
 
+    public void process() {
+        // do nothing
+    }
+
+    /**
+     * Process single JcTree
+     */
     public void process(JCTree jcTree) {
         // do nothing
     }
 
-    public void process(Element e) {
-        // do nothing
-    }
-
-    public void process(Element e, JCTree... jcTrees) {
+    /**
+     * Process JCTrees.
+     *
+     * @param jcTrees Tree array
+     */
+    public void process(JCTree... jcTrees) {
         // do nothing
     }
 
@@ -116,30 +123,34 @@ public abstract class TreeProcessor {
      *
      * @param stats    original code statements
      * @param attached new code statement
-     * @param offset   position of new code
      * @return The new method statements which contains new code.
      */
     List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        JCTree.JCStatement attached,
-                                        int offset) {
-        return attachCode(stats, List.of(attached), offset);
+                                        AnnoProcessor.MethodConfig.NewCode attached) {
+        return attachCode(stats, List.of(attached));
     }
 
     List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        List<JCTree.JCStatement> attached,
-                                        int offset) {
-        ArrayList<JCTree.JCStatement> statements = new ArrayList<>();
-        // before
-        for (int i = 0; i < offset; i++) {
-            statements.add(stats.get(i));
+                                        List<AnnoProcessor.MethodConfig.NewCode> attached) {
+
+        List<JCTree.JCStatement> result = List.nil();
+        int offset = 0;
+
+        for (AnnoProcessor.MethodConfig.NewCode newCode : attached) {
+            int newOffset = newCode.getOffset();
+            while (offset < newOffset) {
+                result = result.append(stats.get(offset));
+                offset++;
+            }
+            result = result.append(newCode.getStatement());
         }
-        // attach code
-        statements.addAll(attached);
-        // after
-        for (int i = offset; i < stats.size(); i++) {
-            statements.add(stats.get(i));
+
+        while (offset < stats.size()) {
+            result = result.append(stats.get(offset));
+            offset++;
         }
-        return List.from(statements);
+
+        return result;
     }
 
     static ClassType getClassType(String className) { // FIXME Can't process inner class

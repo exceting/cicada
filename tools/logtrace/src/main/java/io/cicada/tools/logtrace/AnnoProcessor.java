@@ -9,7 +9,6 @@ import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
-import org.slf4j.event.Level;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -27,9 +26,7 @@ public class AnnoProcessor extends AbstractProcessor {
         super.init(processingEnv);
         this.processingEnv = processingEnv;
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
-        this.factory = new ProcessorFactory(JavacTrees.instance(processingEnv),
-                TreeMaker.instance(context),
-                Names.instance(context));
+        this.factory = new ProcessorFactory(JavacTrees.instance(processingEnv), TreeMaker.instance(context), Names.instance(context));
     }
 
     @Override
@@ -55,7 +52,9 @@ public class AnnoProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement t : annotations) {
             for (Element e : roundEnv.getElementsAnnotatedWith(t)) {
-                factory.get(ProcessorFactory.Kind.ROOT).process(e);
+                currentElement.set(e);
+                factory.get(ProcessorFactory.Kind.ROOT).process();
+                currentElement.remove();
             }
         }
         return true;
@@ -79,6 +78,8 @@ public class AnnoProcessor extends AbstractProcessor {
      */
     public static final ThreadLocal<MethodConfig> currentMethodConfig = new ThreadLocal<>();
 
+    public static final ThreadLocal<Element> currentElement = new ThreadLocal<>();
+
     public static class MethodConfig {
         private final String methodName;
         private final boolean exceptionLog;
@@ -91,12 +92,8 @@ public class AnnoProcessor extends AbstractProcessor {
         private final String traceLevel;
 
         private final Stack<JCTree.JCBlock> blockStack = new Stack<>(); // Method block stack.
-        private final Stack<JCTree.JCStatement> attachStack = new Stack<>(); // Use to attach code to 1st line of block.
 
-        public MethodConfig(String methodName,
-                            boolean exceptionLog,
-                            boolean traceLoop,
-                            String traceLevel) {
+        public MethodConfig(String methodName, boolean exceptionLog, boolean traceLoop, String traceLevel) {
             this.methodName = methodName;
             this.exceptionLog = exceptionLog;
             this.traceLoop = traceLoop;
@@ -115,16 +112,30 @@ public class AnnoProcessor extends AbstractProcessor {
             return traceLoop;
         }
 
-        public Stack<JCTree.JCStatement> getAttachStack() {
-            return attachStack;
-        }
-
         public String getMethodName() {
             return methodName;
         }
 
         public Stack<JCTree.JCBlock> getBlockStack() {
             return blockStack;
+        }
+
+        public static class NewCode {
+            private final int offset;
+            private final JCTree.JCStatement statement;
+
+            public NewCode(int offset, JCTree.JCStatement statement) {
+                this.offset = offset;
+                this.statement = statement;
+            }
+
+            public int getOffset() {
+                return offset;
+            }
+
+            public JCTree.JCStatement getStatement() {
+                return statement;
+            }
         }
     }
 }

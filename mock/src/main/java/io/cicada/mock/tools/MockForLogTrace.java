@@ -7,6 +7,7 @@ import org.slf4j.event.Level;
 import java.beans.JavaBean;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @TestAnno
 @JavaBean
@@ -43,6 +44,21 @@ public class MockForLogTrace {
             is.forEach(i -> {
                 System.out.println(i);
             });
+
+            boolean sss = isHid();
+            Boolean ssss = isHid();
+            List sss2 = getList();
+            boolean sss3 = false;
+            int br = isHid() ? 1 : 2;
+            boolean br2 = sss == sss3;
+            List<String> sss4 = new ArrayList<>();
+            Object sss5 = isHid() ? new Object() : null;
+            MockForLogTrace sss55 = getMock();
+            Map<String, String> sss6 = getMap();
+            int[] sss7 = isHid() ? new int[]{1, 2} : null;
+            Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
+            if (sss5 == null)
+                System.out.println("767676");
 
             int aaa = 2;
             while (aaa > 0) {
@@ -98,6 +114,18 @@ public class MockForLogTrace {
             // do nothing
             throw e;
         }
+    }
+
+    private MockForLogTrace getMock() {
+        return new MockForLogTrace();
+    }
+
+    private List<String> getList() {
+        return new ArrayList<>();
+    }
+
+    private Map<String, String> getMap() {
+        return null;
     }
 
     private boolean isHid() {
