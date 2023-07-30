@@ -14,7 +14,7 @@ import java.util.List;
 @Slf4jCheck
 public class MockForLogTrace {
 
-    private static final String v = "xxxfx";
+    private static final String v = "xxxfxx";
 
     public static void main(String[] args) {
         MockForLogTrace m = new MockForLogTrace();
