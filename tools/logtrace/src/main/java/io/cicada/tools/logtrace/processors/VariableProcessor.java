@@ -6,7 +6,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
-import io.cicada.tools.logtrace.AnnoProcessor;
+import io.cicada.tools.logtrace.context.Context;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -29,18 +29,18 @@ public class VariableProcessor extends TreeProcessor {
         if (jcVariableDecl.init instanceof JCTree.JCConditional
                 || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
             // Get current block.
-            AnnoProcessor.MethodConfig.OldCode oldCode = AnnoProcessor.currentMethodConfig.get().getBlockStack().peek();
+            Context.MethodConfig.OldCode oldCode = Context.currentMethodConfig.get().getBlockStack().peek();
             if (oldCode != null) {
-                AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
+                Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
                 Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
                 newArgs.put(jcVariableDecl.getName().toString(), treeMaker.Ident(jcVariableDecl.getName()));
 
-                oldCode.addNewCode(new AnnoProcessor.MethodConfig.NewCode(oldCode.getOffset() + 1,
+                oldCode.addNewCode(new Context.MethodConfig.NewCode(oldCode.getOffset() + 1,
                         treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
-                                treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
+                                treeMaker.Ident(names.fromString(Context.currentLogIdentName.get())),
                                 getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
                                 methodConfig.getLogContent().getLogParams(Tree.Kind.VARIABLE,
-                                        AnnoProcessor.lineMap.get().getLineNumber(jcVariableDecl.getStartPosition()),
+                                        Context.lineMap.get().getLineNumber(jcVariableDecl.getStartPosition()),
                                         "", newArgs, treeMaker))))));
             }
         }

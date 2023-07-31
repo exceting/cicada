@@ -23,7 +23,7 @@ public @interface LogTrace {
      * Since I cannot determine the size of your loop, I am unable to assess the potential risks posed by the loop.
      * You can enable it through this configuration
      */
-    boolean traceLoop() default false;
+    boolean banLoop() default false;
 
     /**
      * Level of trace log.

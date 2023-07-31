@@ -32,13 +32,14 @@ public class MockForLogTrace {
 
     }
 
-    @LogTrace(exceptionLog = true, traceLoop = true, traceLevel = Level.DEBUG)
+    @LogTrace(exceptionLog = true, banLoop = false, traceLevel = Level.DEBUG)
     private void testIf(Integer age,
                         List<Integer> names,
                         int[] as,
                         List<String>[] lists,
                         @Ban EmptyInterface emptyInterface) {
         try {
+
             List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));
             for (Integer i : is) {
                 if (i == 2) {

@@ -4,8 +4,8 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.cicada.tools.logtrace.AnnoProcessor;
 import io.cicada.tools.logtrace.annos.LogTrace;
+import io.cicada.tools.logtrace.context.Context;
 
 import java.util.Objects;
 
@@ -14,7 +14,7 @@ public class ClassProcessor extends TreeProcessor {
     static final String LOG_TRACE = LogTrace.class.getName();
 
     static final String LOG_TRACE_EXCEPTION_LOG = "exceptionLog";
-    static final String LOG_TRACE_RETURN_LOG = "returnLog";
+    static final String LOG_TRACE_BAN_LOOP = "banLoop";
     static final String LOG_TRACE_LEVEL = "traceLevel";
 
     ClassProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
@@ -37,7 +37,7 @@ public class ClassProcessor extends TreeProcessor {
                             continue;
                         }
                         boolean exceptionLog = false;
-                        boolean returnLog = true;
+                        boolean banLoop = true;
                         String level = "Level.TRACE";
                         if (anno.getArguments() != null && anno.getArguments().size() > 0) {
                             for (JCTree.JCExpression arg : anno.getArguments()) {
@@ -48,21 +48,21 @@ public class ClassProcessor extends TreeProcessor {
                                 if (LOG_TRACE_EXCEPTION_LOG.equals(assign.lhs.toString())) {
                                     exceptionLog = "true".equals(assign.rhs.toString());
                                 }
-                                if (LOG_TRACE_RETURN_LOG.equals(assign.lhs.toString())) {
-                                    returnLog = "true".equals(assign.rhs.toString());
+                                if (LOG_TRACE_BAN_LOOP.equals(assign.lhs.toString())) {
+                                    banLoop = "true".equals(assign.rhs.toString());
                                 }
                                 if (LOG_TRACE_LEVEL.equals(assign.lhs.toString())) {
                                     level = assign.rhs.toString();
                                 }
                             }
-                            AnnoProcessor.currentMethodConfig.set(new AnnoProcessor.MethodConfig(
+                            Context.currentMethodConfig.set(new Context.MethodConfig(
                                     String.format("%s.%s#%s",
                                             classDecl.sym.packge().getQualifiedName(),
                                             classDecl.getSimpleName(),
                                             def.getName().toString()),
                                     argMap(def.getParameters()),
                                     exceptionLog,
-                                    returnLog,
+                                    banLoop,
                                     level));
                             factory.get(ProcessorFactory.Kind.METHOD_DECL).process(def);
                         }

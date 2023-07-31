@@ -4,7 +4,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.cicada.tools.logtrace.AnnoProcessor;
+import io.cicada.tools.logtrace.context.Context;
 
 /**
  * A processor for handling BLOCK statement.
@@ -21,8 +21,8 @@ public class BlockProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCBlock)) {
             return;
         }
-        AnnoProcessor.MethodConfig.OldCode oldCode = new AnnoProcessor.MethodConfig.OldCode((JCTree.JCBlock) jcTree);
-        AnnoProcessor.currentMethodConfig.get().getBlockStack().push(oldCode);
+        Context.MethodConfig.OldCode oldCode = new Context.MethodConfig.OldCode((JCTree.JCBlock) jcTree);
+        Context.currentMethodConfig.get().getBlockStack().push(oldCode);
         try {
             if (oldCode.getBlock().getStatements() == null || oldCode.getBlock().getStatements().size() == 0) {
                 return;
@@ -34,7 +34,7 @@ public class BlockProcessor extends TreeProcessor {
             oldCode.getBlock().stats = attachCode(oldCode.getBlock().stats, oldCode.getNewCodes());
         } finally {
             // Pop block.
-            AnnoProcessor.currentMethodConfig.get().getBlockStack().pop();
+            Context.currentMethodConfig.get().getBlockStack().pop();
         }
     }
 }

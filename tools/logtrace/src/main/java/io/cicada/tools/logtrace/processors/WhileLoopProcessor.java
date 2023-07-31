@@ -5,7 +5,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.cicada.tools.logtrace.AnnoProcessor;
+import io.cicada.tools.logtrace.context.Context;
 
 public class WhileLoopProcessor extends TreeProcessor {
     WhileLoopProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
@@ -14,7 +14,7 @@ public class WhileLoopProcessor extends TreeProcessor {
 
     @Override
     public void process(JCTree jcTree) {
-        if (!AnnoProcessor.currentMethodConfig.get().isTraceLoop()) {
+        if (Context.currentMethodConfig.get().isBanLoop()) {
             return;
         }
         if (!(jcTree instanceof JCTree.JCWhileLoop)) {

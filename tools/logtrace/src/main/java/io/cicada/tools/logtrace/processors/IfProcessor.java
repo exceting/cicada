@@ -7,7 +7,7 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
-import io.cicada.tools.logtrace.AnnoProcessor;
+import io.cicada.tools.logtrace.context.Context;
 
 /**
  * A processor for handling IF statement.
@@ -31,15 +31,15 @@ public class IfProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCIf) && !(jcTree instanceof JCTree.JCBlock)) {
             return;
         }
-        AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
-        Position.LineMap lineMap = AnnoProcessor.lineMap.get();
+        Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
+        Position.LineMap lineMap = Context.lineMap.get();
         if (jcTree instanceof JCTree.JCIf) {
             JCTree.JCIf jcIf = (JCTree.JCIf) jcTree;
             // TODO The cond may should be processed.
             // factory.get(ProcessorFactory.Kind.IF_COND).process(jcIf.cond);
-            AnnoProcessor.MethodConfig.NewCode newCode = new AnnoProcessor.MethodConfig.NewCode(0,
+            Context.MethodConfig.NewCode newCode = new Context.MethodConfig.NewCode(0,
                     treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
-                            treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
+                            treeMaker.Ident(names.fromString(Context.currentLogIdentName.get())),
                             getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
                             methodConfig.getLogContent().getLogParams(Tree.Kind.IF,
                                     lineMap.getLineNumber(jcIf.getStartPosition()),
@@ -52,9 +52,9 @@ public class IfProcessor extends TreeProcessor {
             }
             process(jcIf.elsepart);
         } else {
-            AnnoProcessor.MethodConfig.NewCode newCode = new AnnoProcessor.MethodConfig.NewCode(0,
+            Context.MethodConfig.NewCode newCode = new Context.MethodConfig.NewCode(0,
                     treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
-                            treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
+                            treeMaker.Ident(names.fromString(Context.currentLogIdentName.get())),
                             getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
                             methodConfig.getLogContent().getLogParams(Tree.Kind.IF,
                                     lineMap.getLineNumber(jcTree.getStartPosition()),
@@ -64,11 +64,5 @@ public class IfProcessor extends TreeProcessor {
             JCTree.JCBlock elsePart = (JCTree.JCBlock) jcTree;
             elsePart.stats = attachCode(elsePart.stats, newCode);
         }
-    }
-
-    private JCTree.JCStatement buildNewCode(AnnoProcessor.MethodConfig methodConfig, String msg) {
-        return treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
-                treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
-                getSlf4jMethod(methodConfig.getTraceLevel())), List.of(treeMaker.Literal(msg))));
     }
 }

@@ -7,8 +7,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
-import io.cicada.tools.logtrace.AnnoProcessor;
 import com.sun.tools.javac.util.Name;
+import io.cicada.tools.logtrace.context.Context;
 
 import java.util.LinkedList;
 
@@ -27,16 +27,16 @@ public class MethodProcessor extends TreeProcessor {
         JCTree.JCMethodDecl methodDecl = (JCTree.JCMethodDecl) jcTree;
         JCTree.JCBlock methodBody = methodDecl.body;
 
-        AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
-        Position.LineMap lineMap = AnnoProcessor.lineMap.get();
+        Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
+        Position.LineMap lineMap = Context.lineMap.get();
 
-        methodConfig.getBlockStack().push(new AnnoProcessor.MethodConfig.OldCode(methodBody));
+        methodConfig.getBlockStack().push(new Context.MethodConfig.OldCode(methodBody));
 
         try {
-            Name logObjName = names.fromString(AnnoProcessor.currentLogIdentName.get());
+            Name logObjName = names.fromString(Context.currentLogIdentName.get());
             Name slf4jMethodName = getSlf4jMethod(methodConfig.getTraceLevel());
 
-            AnnoProcessor.MethodConfig.NewCode startNewCode = new AnnoProcessor.MethodConfig.NewCode(0,
+            Context.MethodConfig.NewCode startNewCode = new Context.MethodConfig.NewCode(0,
                     treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
                                     treeMaker.Ident(logObjName), slf4jMethodName),
                             List.from(methodConfig.getLogContent().getLogParams(Tree.Kind.METHOD,

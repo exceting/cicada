@@ -6,7 +6,7 @@ import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.cicada.tools.logtrace.AnnoProcessor;
+import io.cicada.tools.logtrace.context.Context;
 
 import javax.lang.model.element.Element;
 import java.util.HashSet;
@@ -29,10 +29,10 @@ public class RootProcessor extends TreeProcessor {
 
     @Override
     public void process() {
-        Element e = AnnoProcessor.currentElement.get();
+        Element e = Context.currentElement.get();
         final TreePath treePath = javacTrees.getPath(e);
         final JCTree.JCCompilationUnit unitTree = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
-        AnnoProcessor.lineMap.set(unitTree.getLineMap());
+        Context.lineMap.set(unitTree.getLineMap());
         final List<JCTree.JCImport> imports = unitTree.getImports();
         final JCTree.JCClassDecl classDecl = (JCTree.JCClassDecl) javacTrees.getTree(e);
         final List<JCTree.JCAnnotation> annos = classDecl.mods.annotations; // All annotations of this Class
@@ -71,7 +71,7 @@ public class RootProcessor extends TreeProcessor {
                 num++;
             }
 
-            // Import Logger and LoggerFactory classes.
+            // Import Logger.class, LoggerFactory.class, TRACE_ON_OFF.class.
             factory.get(ProcessorFactory.Kind.IMPORT).process(
                     treeMaker.Import(treeMaker.Select(treeMaker.Ident(names.fromString("org.slf4j")),
                             names.fromString("Logger")), false),
@@ -89,7 +89,7 @@ public class RootProcessor extends TreeProcessor {
                                     names.fromString("class"))))));
         }
         // Init config
-        AnnoProcessor.currentLogIdentName.set(logIdentName);
+        Context.currentLogIdentName.set(logIdentName);
         factory.get(ProcessorFactory.Kind.CLASS_DECL).process(classDecl);
     }
 }

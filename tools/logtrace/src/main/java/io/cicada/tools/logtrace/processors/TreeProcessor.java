@@ -7,8 +7,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Name;
-import io.cicada.tools.logtrace.AnnoProcessor;
 import io.cicada.tools.logtrace.annos.Ban;
+import io.cicada.tools.logtrace.context.Context;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -138,17 +138,17 @@ public abstract class TreeProcessor {
      * @return The new method statements which contains new code.
      */
     List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        AnnoProcessor.MethodConfig.NewCode attached) {
+                                        Context.MethodConfig.NewCode attached) {
         return attachCode(stats, List.of(attached));
     }
 
     List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        java.util.List<AnnoProcessor.MethodConfig.NewCode> attached) {
+                                        java.util.List<Context.MethodConfig.NewCode> attached) {
         return attachCode(stats, List.from(attached));
     }
 
     List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        List<AnnoProcessor.MethodConfig.NewCode> attached) {
+                                        List<Context.MethodConfig.NewCode> attached) {
 
         if (attached == null || attached.size() == 0) {
             return stats;
@@ -157,7 +157,7 @@ public abstract class TreeProcessor {
         List<JCTree.JCStatement> result = List.nil();
         int offset = 0;
 
-        for (AnnoProcessor.MethodConfig.NewCode newCode : attached) {
+        for (Context.MethodConfig.NewCode newCode : attached) {
             int newOffset = newCode.getOffset();
             while (offset < newOffset) {
                 result = result.append(stats.get(offset));
