@@ -8,13 +8,16 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Name;
 import io.cicada.tools.logtrace.AnnoProcessor;
+import io.cicada.tools.logtrace.annos.Ban;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class TreeProcessor {
-    static final String PREFIX = "LOG_TRACE >>>>>> OUTPUT: [METHOD: %s][%s][LINE: %s] ";
+
+    static final String PARAM_BAN = Ban.class.getName();
     ProcessorFactory factory;
     JavacTrees javacTrees;
     TreeMaker treeMaker;
@@ -52,7 +55,16 @@ public abstract class TreeProcessor {
             return null;
         }
         Map<String, JCTree.JCExpression> result = new LinkedHashMap<>();
-        originalArgs.forEach(oa -> {
+        originalArgs.stream().filter(oa -> {
+            if (oa.getModifiers() == null
+                    || oa.getModifiers().getAnnotations() == null
+                    || oa.getModifiers().getAnnotations().size() == 0) {
+                return true;
+            }
+            java.util.List<JCTree.JCAnnotation> banAnnos = oa.getModifiers().getAnnotations()
+                    .stream().filter(oaa -> PARAM_BAN.equals(oaa.type.toString())).collect(Collectors.toList());
+            return banAnnos.size() == 0;
+        }).forEach(oa -> {
             String argName = oa.getName().toString();
             result.put(argName, getExpByClassType(argName, getClassType(oa.getType()
                     .type.tsym.getQualifiedName().toString())));
@@ -131,7 +143,16 @@ public abstract class TreeProcessor {
     }
 
     List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
+                                        java.util.List<AnnoProcessor.MethodConfig.NewCode> attached) {
+        return attachCode(stats, List.from(attached));
+    }
+
+    List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
                                         List<AnnoProcessor.MethodConfig.NewCode> attached) {
+
+        if (attached == null || attached.size() == 0) {
+            return stats;
+        }
 
         List<JCTree.JCStatement> result = List.nil();
         int offset = 0;

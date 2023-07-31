@@ -1,5 +1,6 @@
 package io.cicada.tools.logtrace.processors;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -18,6 +19,6 @@ public class EnhancedForLoopProcessor extends TreeProcessor {
         JCTree.JCEnhancedForLoop enhancedForLoop = (JCTree.JCEnhancedForLoop) jcTree;
         // TODO The expr,var may should be processed.
         // enhancedForLoop.expr, enhancedForLoop.var
-        factory.get(ProcessorFactory.Kind.BLOCK).process(enhancedForLoop.body);
+        factory.get(Tree.Kind.BLOCK).process(enhancedForLoop.body);
     }
 }

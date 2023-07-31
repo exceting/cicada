@@ -1,5 +1,6 @@
 package io.cicada.tools.logtrace.processors;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -10,7 +11,6 @@ import io.cicada.tools.logtrace.AnnoProcessor;
 import com.sun.tools.javac.util.Name;
 
 import java.util.LinkedList;
-import java.util.Map;
 
 public class MethodProcessor extends TreeProcessor {
 
@@ -30,55 +30,46 @@ public class MethodProcessor extends TreeProcessor {
         AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
         Position.LineMap lineMap = AnnoProcessor.lineMap.get();
 
-        StringBuilder logParams = new StringBuilder();
+        methodConfig.getBlockStack().push(new AnnoProcessor.MethodConfig.OldCode(methodBody));
 
-        // Get args.
-        List<JCTree.JCVariableDecl> params = methodDecl.getParameters();
-        LinkedList<JCTree.JCExpression> logArgs = new LinkedList<>();
-        if (params != null && params.size() > 0) {
-            Map<String, JCTree.JCExpression> argMap = argMap(params);
-            if (argMap != null && argMap.size() > 0) {
-                logParams.append(" Params: ");
-                argMap.forEach((k, v) -> {
-                    logParams.append(k).append(" = ").append("{}, ");
-                    logArgs.add(v);
-                });
+        try {
+            Name logObjName = names.fromString(AnnoProcessor.currentLogIdentName.get());
+            Name slf4jMethodName = getSlf4jMethod(methodConfig.getTraceLevel());
+
+            AnnoProcessor.MethodConfig.NewCode startNewCode = new AnnoProcessor.MethodConfig.NewCode(0,
+                    treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
+                                    treeMaker.Ident(logObjName), slf4jMethodName),
+                            List.from(methodConfig.getLogContent().getLogParams(Tree.Kind.METHOD,
+                                    lineMap.getLineNumber(methodBody.getStartPosition()),
+                                    "Start!", null, treeMaker)))));
+
+            factory.get(Tree.Kind.BLOCK).process(methodBody);
+
+            methodBody.stats = attachCode(methodBody.stats, startNewCode);
+
+            // Add try-catch statement.
+            if (methodConfig.isExceptionLog()) {
+
+                LinkedList<JCTree.JCExpression> logParams = methodConfig.getLogContent()
+                        .getLogParams(Tree.Kind.TRY,
+                                lineMap.getLineNumber(methodBody.getStartPosition()),
+                                "Error!", null, treeMaker);
+                Name e = names.fromString("e");
+                JCTree.JCIdent eIdent = treeMaker.Ident(e);
+                logParams.add(eIdent);
+
+                JCTree.JCCatch jcCatch = treeMaker.Catch(treeMaker.VarDef(treeMaker.Modifiers(0), e,
+                                treeMaker.Ident(names.fromString("Exception")), null),
+                        treeMaker.Block(0L, List.of(treeMaker.Exec(treeMaker.Apply(List.nil(),
+                                        treeMaker.Select(treeMaker.Ident(logObjName), slf4jMethodName),
+                                        List.from(logParams))),
+                                treeMaker.Throw(eIdent))));
+
+                methodBody.stats = List.of(treeMaker.Try(treeMaker.Block(methodBody.flags, methodBody.stats),
+                        List.of(jcCatch), null));
             }
-        }
-
-        String methodStart = String.format(PREFIX, methodConfig.getMethodName(), "METHOD_START",
-                lineMap.getLineNumber(methodBody.getStartPosition())) + "Start!";
-        logArgs.addFirst(treeMaker.Literal(methodStart + logParams));
-        methodConfig.getBlockStack().push(methodBody);
-        Name logObjName = names.fromString(AnnoProcessor.currentLogIdentName.get());
-        Name slf4jMethodName = getSlf4jMethod(methodConfig.getTraceLevel());
-
-        AnnoProcessor.MethodConfig.NewCode startNewCode = new AnnoProcessor.MethodConfig.NewCode(0,
-                treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
-                        treeMaker.Ident(logObjName), slf4jMethodName), List.from(logArgs))));
-
-        factory.get(ProcessorFactory.Kind.BLOCK).process(methodBody);
-
-        methodBody.stats = attachCode(methodBody.stats, startNewCode);
-
-        // Add try-catch statement.
-        if (methodConfig.isExceptionLog()) {
-
-            String methodError = String.format(PREFIX, methodConfig.getMethodName(), "METHOD_ERROR",
-                    lineMap.getLineNumber(methodBody.getStartPosition())) + "Error!";
-            Name p = names.fromString("e");
-            logArgs.removeFirst();
-            logArgs.addFirst(treeMaker.Literal(methodError + logParams));
-            logArgs.add(treeMaker.Ident(p));
-            JCTree.JCCatch jcCatch = treeMaker.Catch(treeMaker.VarDef(treeMaker.Modifiers(0), p,
-                            treeMaker.Ident(names.fromString("Exception")), null),
-                    treeMaker.Block(0L, List.of(treeMaker.Exec(treeMaker.Apply(List.nil(),
-                                    treeMaker.Select(treeMaker.Ident(logObjName), slf4jMethodName),
-                                    List.from(logArgs))),
-                            treeMaker.Throw(treeMaker.Ident(p)))));
-
-            methodBody.stats = List.of(treeMaker.Try(treeMaker.Block(methodBody.flags, methodBody.stats),
-                    List.of(jcCatch), null));
+        } finally {
+            methodConfig.getBlockStack().pop();
         }
     }
 }

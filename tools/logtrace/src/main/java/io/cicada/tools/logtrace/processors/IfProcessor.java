@@ -1,5 +1,6 @@
 package io.cicada.tools.logtrace.processors;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -32,35 +33,34 @@ public class IfProcessor extends TreeProcessor {
         }
         AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
         Position.LineMap lineMap = AnnoProcessor.lineMap.get();
-        StringBuilder logMsg = new StringBuilder();
         if (jcTree instanceof JCTree.JCIf) {
             JCTree.JCIf jcIf = (JCTree.JCIf) jcTree;
             // TODO The cond may should be processed.
             // factory.get(ProcessorFactory.Kind.IF_COND).process(jcIf.cond);
-            AnnoProcessor.MethodConfig.NewCode newCode = new AnnoProcessor.MethodConfig.NewCode(0, buildNewCode(methodConfig, logMsg
-                    .append(String.format(PREFIX, methodConfig.getMethodName(),
-                            ProcessorFactory.Kind.IF_STATEMENT,
-                            lineMap.getLineNumber(jcIf.getStartPosition())))
-                    .append("The condition: ")
-                    .append(jcIf.cond)
-                    .append(" is TRUE!")
-                    .toString()));
-            factory.get(ProcessorFactory.Kind.BLOCK).process(jcIf.thenpart);
+            AnnoProcessor.MethodConfig.NewCode newCode = new AnnoProcessor.MethodConfig.NewCode(0,
+                    treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
+                            treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
+                            getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
+                            methodConfig.getLogContent().getLogParams(Tree.Kind.IF,
+                                    lineMap.getLineNumber(jcIf.getStartPosition()),
+                                    String.format("The condition: %s is TRUE!", jcIf.cond),
+                                    null, treeMaker)))));
+            factory.get(Tree.Kind.BLOCK).process(jcIf.thenpart);
             if (jcIf.thenpart instanceof JCTree.JCBlock) {
                 JCTree.JCBlock then = (JCTree.JCBlock) jcIf.thenpart;
                 then.stats = attachCode(then.stats, newCode);
             }
             process(jcIf.elsepart);
         } else {
-            AnnoProcessor.MethodConfig.NewCode newCode = new AnnoProcessor.MethodConfig.NewCode(0, buildNewCode(methodConfig, logMsg
-                    .append(String.format(PREFIX, methodConfig.getMethodName(),
-                            ProcessorFactory.Kind.IF_STATEMENT,
-                            lineMap.getLineNumber(jcTree.getStartPosition())))
-                    .append("The condition: ")
-                    .append("ELSE")
-                    .append(" is TRUE!")
-                    .toString()));
-            factory.get(ProcessorFactory.Kind.BLOCK).process(jcTree);
+            AnnoProcessor.MethodConfig.NewCode newCode = new AnnoProcessor.MethodConfig.NewCode(0,
+                    treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
+                            treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
+                            getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
+                            methodConfig.getLogContent().getLogParams(Tree.Kind.IF,
+                                    lineMap.getLineNumber(jcTree.getStartPosition()),
+                                    "The condition: ELSE is TRUE!",
+                                    null, treeMaker)))));
+            factory.get(Tree.Kind.BLOCK).process(jcTree);
             JCTree.JCBlock elsePart = (JCTree.JCBlock) jcTree;
             elsePart.stats = attachCode(elsePart.stats, newCode);
         }

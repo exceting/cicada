@@ -21,39 +21,20 @@ public class BlockProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCBlock)) {
             return;
         }
-        JCTree.JCBlock jcBlock = (JCTree.JCBlock) jcTree;
-        AnnoProcessor.currentMethodConfig.get().getBlockStack().push(jcBlock);
-        if (jcBlock.getStatements() == null || jcBlock.getStatements().size() == 0) {
-            return;
-        }
-        for (JCTree.JCStatement statement : jcBlock.getStatements()) {
-            switch (statement.getKind()) {
-                case IF:
-                    factory.get(ProcessorFactory.Kind.IF_STATEMENT).process(statement);
-                    break;
-                case TRY:
-                    factory.get(ProcessorFactory.Kind.TRY).process(statement);
-                    break;
-                case FOR_LOOP:
-                    factory.get(ProcessorFactory.Kind.FOR_LOOP).process(statement);
-                    break;
-                case WHILE_LOOP:
-                    factory.get(ProcessorFactory.Kind.WHILE_LOOP).process(statement);
-                    break;
-                case DO_WHILE_LOOP:
-                    factory.get(ProcessorFactory.Kind.DO_WHILE_LOOP).process(statement);
-                    break;
-                case ENHANCED_FOR_LOOP:
-                    factory.get(ProcessorFactory.Kind.ENHANCED_FOR_LOOP).process(statement);
-                    break;
-                case VARIABLE:
-                    factory.get(ProcessorFactory.Kind.VARIABLE).process(statement);
-                    break;
-                default:
-                    // do nothing
+        AnnoProcessor.MethodConfig.OldCode oldCode = new AnnoProcessor.MethodConfig.OldCode((JCTree.JCBlock) jcTree);
+        AnnoProcessor.currentMethodConfig.get().getBlockStack().push(oldCode);
+        try {
+            if (oldCode.getBlock().getStatements() == null || oldCode.getBlock().getStatements().size() == 0) {
+                return;
             }
+            for (JCTree.JCStatement statement : oldCode.getBlock().getStatements()) {
+                factory.get(statement.getKind()).process(statement);
+                oldCode.incrOffset();
+            }
+            oldCode.getBlock().stats = attachCode(oldCode.getBlock().stats, oldCode.getNewCodes());
+        } finally {
+            // Pop block.
+            AnnoProcessor.currentMethodConfig.get().getBlockStack().pop();
         }
-        // Pop block.
-        AnnoProcessor.currentMethodConfig.get().getBlockStack().pop();
     }
 }

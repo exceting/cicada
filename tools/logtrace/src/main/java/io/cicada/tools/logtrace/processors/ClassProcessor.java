@@ -60,6 +60,7 @@ public class ClassProcessor extends TreeProcessor {
                                             classDecl.sym.packge().getQualifiedName(),
                                             classDecl.getSimpleName(),
                                             def.getName().toString()),
+                                    argMap(def.getParameters()),
                                     exceptionLog,
                                     returnLog,
                                     level));

@@ -1,5 +1,6 @@
 package io.cicada.tools.logtrace.processors;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -22,6 +23,6 @@ public class ForLoopProcessor extends TreeProcessor {
         JCTree.JCForLoop forLoop = (JCTree.JCForLoop) jcTree;
         // TODO The cond,init,step may should be processed.
         // forLoop.cond, forLoop.init, forLoop.step
-        factory.get(ProcessorFactory.Kind.BLOCK).process(forLoop.body);
+        factory.get(Tree.Kind.BLOCK).process(forLoop.body);
     }
 }

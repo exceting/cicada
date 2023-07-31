@@ -1,5 +1,6 @@
 package io.cicada.tools.logtrace.processors;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -17,6 +18,6 @@ public class TryProcessor extends TreeProcessor {
             return;
         }
         JCTree.JCTry jcTry = (JCTree.JCTry) jcTree;
-        factory.get(ProcessorFactory.Kind.BLOCK).process(jcTry.body);
+        factory.get(Tree.Kind.BLOCK).process(jcTry.body);
     }
 }

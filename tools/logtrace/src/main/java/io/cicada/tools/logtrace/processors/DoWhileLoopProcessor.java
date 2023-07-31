@@ -1,5 +1,6 @@
 package io.cicada.tools.logtrace.processors;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -22,6 +23,6 @@ public class DoWhileLoopProcessor extends TreeProcessor {
         JCTree.JCDoWhileLoop doWhileLoop = (JCTree.JCDoWhileLoop) jcTree;
         // TODO The cond may should be processed.
         // doWhileLoop.cond
-        factory.get(ProcessorFactory.Kind.BLOCK).process(doWhileLoop.body);
+        factory.get(Tree.Kind.BLOCK).process(doWhileLoop.body);
     }
 }

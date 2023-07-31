@@ -1,5 +1,6 @@
 package io.cicada.tools.logtrace;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
@@ -7,8 +8,10 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
+import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
@@ -17,6 +20,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class AnnoProcessor extends AbstractProcessor {
     private ProcessorFactory factory;
@@ -82,6 +87,7 @@ public class AnnoProcessor extends AbstractProcessor {
 
     public static class MethodConfig {
         private final String methodName;
+        private final LogContent logContent;
         private final boolean exceptionLog;
         private final boolean traceLoop;
 
@@ -91,10 +97,12 @@ public class AnnoProcessor extends AbstractProcessor {
          */
         private final String traceLevel;
 
-        private final Stack<JCTree.JCBlock> blockStack = new Stack<>(); // Method block stack.
+        private final Stack<OldCode> blockStack = new Stack<>(); // Method block stack.
 
-        public MethodConfig(String methodName, boolean exceptionLog, boolean traceLoop, String traceLevel) {
+        public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap,
+                            boolean exceptionLog, boolean traceLoop, String traceLevel) {
             this.methodName = methodName;
+            this.logContent = new LogContent(methodName, argMap);
             this.exceptionLog = exceptionLog;
             this.traceLoop = traceLoop;
             this.traceLevel = traceLevel;
@@ -116,8 +124,42 @@ public class AnnoProcessor extends AbstractProcessor {
             return methodName;
         }
 
-        public Stack<JCTree.JCBlock> getBlockStack() {
+        public Stack<OldCode> getBlockStack() {
             return blockStack;
+        }
+
+        public LogContent getLogContent() {
+            return logContent;
+        }
+
+        public static class OldCode {
+            private int offset = 0;
+            private final List<NewCode> newCodes = new ArrayList<>();
+            private final JCTree.JCBlock block;
+
+            public OldCode(JCTree.JCBlock block) {
+                this.block = block;
+            }
+
+            public void incrOffset() {
+                offset++;
+            }
+
+            public void addNewCode(NewCode newCode) {
+                newCodes.add(newCode);
+            }
+
+            public int getOffset() {
+                return offset;
+            }
+
+            public JCTree.JCBlock getBlock() {
+                return block;
+            }
+
+            public List<NewCode> getNewCodes() {
+                return newCodes;
+            }
         }
 
         public static class NewCode {
@@ -136,6 +178,60 @@ public class AnnoProcessor extends AbstractProcessor {
             public JCTree.JCStatement getStatement() {
                 return statement;
             }
+        }
+    }
+
+    public static class LogContent {
+        private final String head;
+        private final StringBuilder paramContent = new StringBuilder();
+        private final LinkedList<JCTree.JCExpression> params = new LinkedList<>();
+
+        private LogContent(String methodName, Map<String, JCTree.JCExpression> argMap) {
+            this.head = String.format("LOG_TRACE >>>>>> OUTPUT: [METHOD: %s]", methodName);
+            if (argMap != null && argMap.size() > 0) {
+                processParams(paramContent, params, argMap);
+            }
+        }
+
+        public LinkedList<JCTree.JCExpression> getLogParams(Tree.Kind kind,
+                                                            int line,
+                                                            String content,
+                                                            Map<String, JCTree.JCExpression> newParams,
+                                                            TreeMaker treeMaker) {
+            LinkedList<JCTree.JCExpression> result = new LinkedList<>();
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(this.head).append("[").append(kind).append("]").append("[LINE: ")
+                    .append(line).append("] ").append(content);
+
+            StringBuilder currentParamContent = new StringBuilder(paramContent);
+            LinkedList<JCTree.JCExpression> currentParams = new LinkedList<>(params);
+
+            if (newParams != null && newParams.size() > 0) {
+                currentParamContent.append(", ");
+                processParams(currentParamContent, currentParams, newParams);
+            }
+
+            if (currentParams.size() > 0) {
+                result.add(treeMaker.Literal(sb.append(" Params: ").append(currentParamContent).toString()));
+                result.addAll(currentParams);
+            }
+            return result;
+        }
+
+        private void processParams(StringBuilder paramContent, LinkedList<JCTree.JCExpression> params,
+                                   Map<String, JCTree.JCExpression> paramMap) {
+            AtomicInteger i = new AtomicInteger();
+            paramMap.forEach((k, v) -> {
+                i.incrementAndGet();
+                paramContent.append(k).append(" = ");
+                if (i.get() == paramMap.size()) {
+                    paramContent.append("{}");
+                } else {
+                    paramContent.append("{}, ");
+                }
+                params.add(v);
+            });
         }
     }
 }

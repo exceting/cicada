@@ -1,10 +1,10 @@
 package io.cicada.tools.logtrace.processors;
 
+import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 
-import javax.lang.model.element.Element;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,42 +13,45 @@ import java.util.Map;
  */
 public class ProcessorFactory {
 
-    private final Map<Kind, TreeProcessor> processorMap;
+    private final TreeProcessor noop;
+    private final Map<Kind, TreeProcessor> baseProcessorMap;
+    private final Map<Tree.Kind, TreeProcessor> processorMap;
 
     public ProcessorFactory(JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+        baseProcessorMap = new HashMap<>();
         processorMap = new HashMap<>();
-        processorMap.put(Kind.ROOT, new RootProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.IMPORT, new ImportProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.BLOCK, new BlockProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.IF_STATEMENT, new IfProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.IF_COND, new ConditionalProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.CLASS_DECL, new ClassProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.METHOD_DECL, new MethodProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.TRY, new TryProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.FOR_LOOP, new ForLoopProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.ENHANCED_FOR_LOOP, new EnhancedForLoopProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.WHILE_LOOP, new WhileLoopProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.DO_WHILE_LOOP, new DoWhileLoopProcessor(this, javacTrees, treeMaker, names));
-        processorMap.put(Kind.VARIABLE, new VariableProcessor(this, javacTrees, treeMaker, names));
+        baseProcessorMap.put(Kind.ROOT, new RootProcessor(this, javacTrees, treeMaker, names));
+        baseProcessorMap.put(Kind.IMPORT, new ImportProcessor(this, javacTrees, treeMaker, names));
+        baseProcessorMap.put(Kind.CLASS_DECL, new ClassProcessor(this, javacTrees, treeMaker, names));
+        baseProcessorMap.put(Kind.METHOD_DECL, new MethodProcessor(this, javacTrees, treeMaker, names));
+
+        noop = new NoopProcessor(this, javacTrees, treeMaker, names);
+
+        processorMap.put(Tree.Kind.BLOCK, new BlockProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.IF, new IfProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.CONDITIONAL_EXPRESSION, new ConditionalProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.TRY, new TryProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.FOR_LOOP, new ForLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.ENHANCED_FOR_LOOP, new EnhancedForLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.WHILE_LOOP, new WhileLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.DO_WHILE_LOOP, new DoWhileLoopProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.VARIABLE, new VariableProcessor(this, javacTrees, treeMaker, names));
     }
 
     public TreeProcessor get(Kind kind) {
-        return processorMap.get(kind);
+        TreeProcessor tp = baseProcessorMap.get(kind);
+        return tp == null ? noop : tp;
+    }
+
+    public TreeProcessor get(Tree.Kind kind) {
+        TreeProcessor tp = processorMap.get(kind);
+        return tp == null ? noop : tp;
     }
 
     public enum Kind {
         ROOT(),
         IMPORT(),
-        BLOCK(),
-        IF_STATEMENT(),
-        IF_COND(),
         CLASS_DECL(),
-        METHOD_DECL(),
-        TRY(),
-        FOR_LOOP(),
-        ENHANCED_FOR_LOOP(),
-        WHILE_LOOP(),
-        DO_WHILE_LOOP(),
-        VARIABLE()
+        METHOD_DECL()
     }
 }

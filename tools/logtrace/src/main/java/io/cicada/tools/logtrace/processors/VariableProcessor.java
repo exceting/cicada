@@ -1,15 +1,15 @@
 package io.cicada.tools.logtrace.processors;
 
 import com.sun.source.tree.Tree;
-import com.sun.source.util.TreePath;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.AnnoProcessor;
 
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
+import java.util.HashMap;
+import java.util.Map;
 
 public class VariableProcessor extends TreeProcessor {
 
@@ -28,20 +28,20 @@ public class VariableProcessor extends TreeProcessor {
         JCTree.JCVariableDecl jcVariableDecl = (JCTree.JCVariableDecl) jcTree;
         if (jcVariableDecl.init instanceof JCTree.JCConditional
                 || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
-
-            String className = "";
-            if (jcVariableDecl.getType() instanceof JCTree.JCPrimitiveTypeTree) {
-                className = jcVariableDecl.getType().toString();
-            }
-            if (jcVariableDecl.getType() instanceof JCTree.JCIdent) {
-                JCTree.JCIdent jcIdent = (JCTree.JCIdent) jcVariableDecl.getType();
-            }
-
-            System.out.println("XXXXXXXX  " + jcVariableDecl + "    " + jcVariableDecl.getType().getClass());
             // Get current block.
-            JCTree.JCBlock blockStack = AnnoProcessor.currentMethodConfig.get().getBlockStack().peek();
-            if (blockStack != null) {
+            AnnoProcessor.MethodConfig.OldCode oldCode = AnnoProcessor.currentMethodConfig.get().getBlockStack().peek();
+            if (oldCode != null) {
+                AnnoProcessor.MethodConfig methodConfig = AnnoProcessor.currentMethodConfig.get();
+                Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
+                newArgs.put(jcVariableDecl.getName().toString(), treeMaker.Ident(jcVariableDecl.getName()));
 
+                oldCode.addNewCode(new AnnoProcessor.MethodConfig.NewCode(oldCode.getOffset() + 1,
+                        treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
+                                treeMaker.Ident(names.fromString(AnnoProcessor.currentLogIdentName.get())),
+                                getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
+                                methodConfig.getLogContent().getLogParams(Tree.Kind.VARIABLE,
+                                        AnnoProcessor.lineMap.get().getLineNumber(jcVariableDecl.getStartPosition()),
+                                        "", newArgs, treeMaker))))));
             }
         }
     }
