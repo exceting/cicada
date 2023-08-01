@@ -36,6 +36,7 @@ public class ProcessorFactory {
         processorMap.put(Tree.Kind.WHILE_LOOP, new WhileLoopProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.DO_WHILE_LOOP, new DoWhileLoopProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.VARIABLE, new VariableProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.SWITCH, new SwitchProcessor(this, javacTrees, treeMaker, names));
     }
 
     public TreeProcessor get(Kind kind) {

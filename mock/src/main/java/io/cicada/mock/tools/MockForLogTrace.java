@@ -35,6 +35,7 @@ public class MockForLogTrace {
     }
 
     static final Logger logger = LoggerFactory.getLogger(MockForLogTrace.class);
+
     @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG)
     private void testIf(@Ban Integer id,
                         @Ban List<Integer> names,
@@ -87,6 +88,8 @@ public class MockForLogTrace {
             int i = 0;
             if (i == 0) { // 变量
                 System.out.println("cccccc");
+            } else if (i == 2) {
+                System.out.println("22222");
             }
             if (VV <= 5) { // 常量
                 System.out.println("hhhhhh");

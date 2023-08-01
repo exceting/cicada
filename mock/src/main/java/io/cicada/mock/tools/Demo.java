@@ -5,8 +5,6 @@ import com.google.common.collect.Lists;
 import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.annos.LogTrace;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import java.util.List;
@@ -20,15 +18,16 @@ public class Demo {
 
     public static void main(String[] args) {
         Demo demo = new Demo();
-        demo.demoMethod(11, "hehehe", null, new String[]{"xxx"}, null);
+        demo.demoMethod(11, "hehehe", null, new String[]{"xxx"}, null, Kind.ROOT);
     }
 
     @LogTrace(traceLevel = Level.DEBUG)
     public void demoMethod(@Ban int id,
                            @Ban String name,
-                           @Ban List<String> books,
+                           List<String> books,
                            @Ban String[] infos,
-                           @Ban Object obj) {
+                           @Ban Object obj,
+                           Kind kind) {
 
         if (id <= 0 || Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("参数不合法！");
@@ -60,6 +59,35 @@ public class Demo {
         } else {
             System.out.println("id > 100");
         }
+
+        switch (id) {
+            case 1:
+                System.out.println("x1");
+                break;
+            case 11:
+                System.out.println("x11");
+                break;
+            case 5:
+                System.out.println("x3");
+                break;
+            default:
+                // do nothing
+        }
+
+        switch (kind){
+            case IMPORT:
+                break;
+            case ROOT:
+                break;
+            default:
+        }
+    }
+
+    public enum Kind {
+        ROOT(),
+        IMPORT(),
+        CLASS_DECL(),
+        METHOD_DECL()
     }
 
     private List<String> getDefaultBooks() {
