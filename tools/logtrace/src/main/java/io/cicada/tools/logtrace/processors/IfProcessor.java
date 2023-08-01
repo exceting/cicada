@@ -44,7 +44,7 @@ public class IfProcessor extends TreeProcessor {
                             methodConfig.getLogContent().getLogParams(Tree.Kind.IF,
                                     lineMap.getLineNumber(jcIf.getStartPosition()),
                                     String.format("The condition: %s is TRUE!", jcIf.cond),
-                                    null, treeMaker)))));
+                                    null, treeMaker, names)))));
             factory.get(Tree.Kind.BLOCK).process(jcIf.thenpart);
             if (jcIf.thenpart instanceof JCTree.JCBlock) {
                 JCTree.JCBlock then = (JCTree.JCBlock) jcIf.thenpart;
@@ -59,7 +59,7 @@ public class IfProcessor extends TreeProcessor {
                             methodConfig.getLogContent().getLogParams(Tree.Kind.IF,
                                     lineMap.getLineNumber(jcTree.getStartPosition()),
                                     "The condition: ELSE is TRUE!",
-                                    null, treeMaker)))));
+                                    null, treeMaker, names)))));
             factory.get(Tree.Kind.BLOCK).process(jcTree);
             JCTree.JCBlock elsePart = (JCTree.JCBlock) jcTree;
             elsePart.stats = attachCode(elsePart.stats, newCode);

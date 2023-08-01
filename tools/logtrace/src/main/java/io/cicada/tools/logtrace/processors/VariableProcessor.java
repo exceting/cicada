@@ -41,7 +41,7 @@ public class VariableProcessor extends TreeProcessor {
                                 getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
                                 methodConfig.getLogContent().getLogParams(Tree.Kind.VARIABLE,
                                         Context.lineMap.get().getLineNumber(jcVariableDecl.getStartPosition()),
-                                        "", newArgs, treeMaker))))));
+                                        "", newArgs, treeMaker, names))))));
             }
         }
     }

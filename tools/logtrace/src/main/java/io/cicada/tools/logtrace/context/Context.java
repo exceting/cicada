@@ -1,8 +1,10 @@
 package io.cicada.tools.logtrace.context;
 
 import com.sun.source.tree.Tree;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
 
 import javax.lang.model.element.Element;
@@ -137,8 +139,7 @@ public class Context {
                                                             int line,
                                                             String content,
                                                             Map<String, JCTree.JCExpression> newParams,
-                                                            TreeMaker treeMaker) {
-            LinkedList<JCTree.JCExpression> result = new LinkedList<>();
+                                                            TreeMaker treeMaker, Names names) {
 
             StringBuilder sb = new StringBuilder();
             sb.append(this.head).append("[").append(kind).append("]").append("[LINE: ")
@@ -148,14 +149,20 @@ public class Context {
             LinkedList<JCTree.JCExpression> currentParams = new LinkedList<>(params);
 
             if (newParams != null && newParams.size() > 0) {
-                currentParamContent.append(", ");
+                if (currentParams.size() > 0) {
+                    currentParamContent.append(", ");
+                }
                 processParams(currentParamContent, currentParams, newParams);
             }
 
+            LinkedList<JCTree.JCExpression> result = new LinkedList<>();
             if (currentParams.size() > 0) {
-                result.add(treeMaker.Literal(sb.append(" Params: ").append(currentParamContent).toString()));
-                result.addAll(currentParams);
+                sb.append(" Data: ").append(currentParamContent);
+                result.add(treeMaker.NewArray(treeMaker.Ident(names.fromString("Object")),
+                        com.sun.tools.javac.util.List.nil(),
+                        com.sun.tools.javac.util.List.from(currentParams)));
             }
+            result.addFirst(treeMaker.Literal(sb.toString()));
             return result;
         }
 

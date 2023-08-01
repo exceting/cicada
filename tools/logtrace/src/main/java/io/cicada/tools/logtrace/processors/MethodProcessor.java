@@ -41,7 +41,7 @@ public class MethodProcessor extends TreeProcessor {
                                     treeMaker.Ident(logObjName), slf4jMethodName),
                             List.from(methodConfig.getLogContent().getLogParams(Tree.Kind.METHOD,
                                     lineMap.getLineNumber(methodBody.getStartPosition()),
-                                    "Start!", null, treeMaker)))));
+                                    "Start!", null, treeMaker, names)))));
 
             factory.get(Tree.Kind.BLOCK).process(methodBody);
 
@@ -53,7 +53,7 @@ public class MethodProcessor extends TreeProcessor {
                 LinkedList<JCTree.JCExpression> logParams = methodConfig.getLogContent()
                         .getLogParams(Tree.Kind.TRY,
                                 lineMap.getLineNumber(methodBody.getStartPosition()),
-                                "Error!", null, treeMaker);
+                                "Error!", null, treeMaker, names);
                 Name e = names.fromString("e");
                 JCTree.JCIdent eIdent = treeMaker.Ident(e);
                 logParams.add(eIdent);

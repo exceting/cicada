@@ -37,7 +37,7 @@ public class ClassProcessor extends TreeProcessor {
                             continue;
                         }
                         boolean exceptionLog = false;
-                        boolean banLoop = true;
+                        boolean banLoop = false;
                         String level = "Level.TRACE";
                         if (anno.getArguments() != null && anno.getArguments().size() > 0) {
                             for (JCTree.JCExpression arg : anno.getArguments()) {
@@ -55,17 +55,14 @@ public class ClassProcessor extends TreeProcessor {
                                     level = assign.rhs.toString();
                                 }
                             }
-                            Context.currentMethodConfig.set(new Context.MethodConfig(
-                                    String.format("%s.%s#%s",
-                                            classDecl.sym.packge().getQualifiedName(),
-                                            classDecl.getSimpleName(),
-                                            def.getName().toString()),
-                                    argMap(def.getParameters()),
-                                    exceptionLog,
-                                    banLoop,
-                                    level));
-                            factory.get(ProcessorFactory.Kind.METHOD_DECL).process(def);
                         }
+                        Context.currentMethodConfig.set(new Context.MethodConfig(
+                                def.getName().toString(),
+                                argMap(def.getParameters()),
+                                exceptionLog,
+                                banLoop,
+                                level));
+                        factory.get(ProcessorFactory.Kind.METHOD_DECL).process(def);
                     }
                 });
     }

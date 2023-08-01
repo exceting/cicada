@@ -3,6 +3,8 @@ package io.cicada.mock.tools;
 import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.annos.LogTrace;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import java.beans.JavaBean;
@@ -32,14 +34,14 @@ public class MockForLogTrace {
 
     }
 
-    @LogTrace(exceptionLog = true, banLoop = false, traceLevel = Level.DEBUG)
-    private void testIf(Integer age,
-                        List<Integer> names,
-                        int[] as,
-                        List<String>[] lists,
+    static final Logger logger = LoggerFactory.getLogger(MockForLogTrace.class);
+    @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG)
+    private void testIf(@Ban Integer id,
+                        @Ban List<Integer> names,
+                        @Ban int[] as,
+                        @Ban List<String>[] lists,
                         @Ban EmptyInterface emptyInterface) {
         try {
-
             List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));
             for (Integer i : is) {
                 if (i == 2) {
