@@ -1,12 +1,12 @@
 package io.cicada.tools.logtrace.context;
 
 import com.sun.source.tree.Tree;
-import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Position;
+import io.cicada.tools.logtrace.processors.RootProcessor;
 
 import javax.lang.model.element.Element;
 import java.util.*;
@@ -16,19 +16,25 @@ public class Context {
 
     /**
      * The code line map.
-     * Refresh in {@link io.cicada.tools.logtrace.processors.RootProcessor}
+     * Refresh in {@link RootProcessor#process()}
      */
     public static final ThreadLocal<Position.LineMap> lineMap = new ThreadLocal<>();
 
     /**
      * The log obj ident.
-     * Refresh in {@link io.cicada.tools.logtrace.processors.RootProcessor}
+     * Refresh in {@link RootProcessor#process()}
      */
     public static final ThreadLocal<String> currentLogIdentName = new ThreadLocal<>();
 
     /**
+     * Master switch obj ident.
+     * Refresh in {@link RootProcessor#process()}
+     */
+    public static final ThreadLocal<String> currentIsOpenIdentName = new ThreadLocal<>();
+
+    /**
      * The method annotation config.
-     * Refresh in {@link io.cicada.tools.logtrace.processors.ClassProcessor}
+     * Refresh in {@link io.cicada.tools.logtrace.processors.ClassProcessor#process(JCTree)}
      */
     public static final ThreadLocal<MethodConfig> currentMethodConfig = new ThreadLocal<>();
 
@@ -42,8 +48,8 @@ public class Context {
         private final Stack<OldCode> blockStack = new Stack<>(); // Method block stack.
 
         public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, boolean exceptionLog,
-                            boolean banLoop, String traceLevel, String[] isOpen) {
-            this.logContent = new LogContent(methodName, traceLevel, isOpen, argMap);
+                            boolean banLoop, String traceLevel) {
+            this.logContent = new LogContent(methodName, traceLevel, argMap);
             this.exceptionLog = exceptionLog;
             this.banLoop = banLoop;
         }
@@ -120,15 +126,12 @@ public class Context {
          * See: {@link org.slf4j.event.Level}
          */
         private final String traceLevel;
-        private final String[] isOpen;
         private final StringBuilder paramContent = new StringBuilder();
         private final LinkedList<JCTree.JCExpression> params = new LinkedList<>();
 
-        private LogContent(String methodName, String traceLevel, String[] isOpen,
-                           Map<String, JCTree.JCExpression> argMap) {
+        private LogContent(String methodName, String traceLevel, Map<String, JCTree.JCExpression> argMap) {
             this.head = String.format("LOG_TRACE >>>>>> OUTPUT: [METHOD: %s]", methodName);
             this.traceLevel = traceLevel;
-            this.isOpen = isOpen;
             if (argMap != null && argMap.size() > 0) {
                 processParams(paramContent, params, argMap);
             }
@@ -145,14 +148,13 @@ public class Context {
                     getSlf4jMethod(traceLevel, names)), com.sun.tools.javac.util.List.from(
                     getLogParams(kind, lineMap.getLineNumber(jcTree.getStartPosition()),
                             content, newParams, treeMaker, names))));
-            if (isOpen != null && isOpen.length > 0) {
-                statement = treeMaker.If(
-                        treeMaker.Apply(com.sun.tools.javac.util.List.nil(),
-                                treeMaker.Apply(com.sun.tools.javac.util.List.nil(),
-                                        treeMaker.Select(treeMaker.Select(treeMaker.Ident(names.fromString(String.format("%s.%s", isOpen[0], isOpen[1]))),
-                                                names.fromString(isOpen[2])), names.fromString("get")),
-                                        com.sun.tools.javac.util.List.nil()),
-                                com.sun.tools.javac.util.List.nil()), statement, null);
+
+            String isOpen = currentIsOpenIdentName.get();
+            if (isOpen != null && !isOpen.equals("")) {
+                statement = treeMaker.If(treeMaker.Apply(com.sun.tools.javac.util.List.nil(),
+                                treeMaker.Select(treeMaker.Ident(names.fromString(isOpen)),
+                                        names.fromString("get")), com.sun.tools.javac.util.List.nil()),
+                        statement, null);
             }
             return statement;
         }

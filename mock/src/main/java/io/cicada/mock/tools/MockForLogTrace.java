@@ -11,18 +11,14 @@ import java.beans.JavaBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @TestAnno
 @JavaBean
 @SuppressWarnings({})
-@Slf4jCheck
+@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class MockForLogTrace {
 
     private static final String v = "xxxfxx";
-
-    public static final AtomicBoolean isOpen = new AtomicBoolean(true);
-
     public static void main(String[] args) {
         MockForLogTrace m = new MockForLogTrace();
         m.testException();
@@ -39,7 +35,9 @@ public class MockForLogTrace {
 
     static final Logger logger = LoggerFactory.getLogger(MockForLogTrace.class);
 
-    @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG, isOpen = "io.cicada.mock.tools.config:Test:isOpen")
+
+
+    @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG)
     private void testIf(Integer id,
                         List<Integer> names,
                         int[] as,

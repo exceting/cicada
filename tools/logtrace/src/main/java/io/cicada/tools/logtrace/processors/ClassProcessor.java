@@ -41,7 +41,6 @@ public class ClassProcessor extends TreeProcessor {
                         boolean exceptionLog = false;
                         boolean banLoop = false;
                         String level = "Level.TRACE";
-                        String[] isOpen = null;
                         if (anno.getArguments() != null && anno.getArguments().size() > 0) {
                             for (JCTree.JCExpression arg : anno.getArguments()) {
                                 if (!(arg instanceof JCTree.JCAssign)) {
@@ -57,14 +56,6 @@ public class ClassProcessor extends TreeProcessor {
                                 if (LOG_TRACE_LEVEL.equals(assign.lhs.toString())) {
                                     level = assign.rhs.toString();
                                 }
-                                if (LOG_TRACE_IS_OPEN.equals(assign.lhs.toString())) {
-                                    isOpen = assign.rhs.toString().replace("\"", "").split(":");
-                                    System.out.println(isOpen[0]+"   "+isOpen[1]);
-                                    factory.get(ProcessorFactory.Kind.IMPORT)
-                                            .process(treeMaker.Import(treeMaker.Select(
-                                                    treeMaker.Ident(names.fromString(isOpen[0])),
-                                                    names.fromString(isOpen[1])), false));
-                                }
                             }
                         }
                         Context.currentMethodConfig.set(new Context.MethodConfig(
@@ -72,8 +63,7 @@ public class ClassProcessor extends TreeProcessor {
                                 argMap(def.getParameters()),
                                 exceptionLog,
                                 banLoop,
-                                level,
-                                isOpen));
+                                level));
                         factory.get(ProcessorFactory.Kind.METHOD_DECL).process(def);
                     }
                 });

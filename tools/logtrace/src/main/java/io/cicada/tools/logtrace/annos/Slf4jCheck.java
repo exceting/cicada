@@ -12,4 +12,14 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE})
 public @interface Slf4jCheck {
+
+    /**
+     * This is a master switch that controls whether to print logs. If you haven't set any value, default is open!
+     * It must be an {@link java.util.concurrent.atomic.AtomicBoolean} public,static,final constant that you need to define by yourself.
+     * You can dynamically control the switch by updating the value of this constant, true is open, false is close.
+     * Format: your class name#your constant
+     * eg: io.cicada.mock.Test#isOpen
+     */
+    String isOpen() default "";
+
 }

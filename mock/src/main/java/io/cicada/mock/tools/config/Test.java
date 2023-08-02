@@ -5,11 +5,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Test {
 
-    public static final AtomicReference<Boolean> isOpen = new AtomicReference<>(false);
+    public static final AtomicBoolean isOpen = new AtomicBoolean(true);
 
     private static final Logger trace_logger = LoggerFactory.getLogger(Test.class);
 

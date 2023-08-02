@@ -52,8 +52,6 @@ public class ImportProcessor extends TreeProcessor {
                     .collect(Collectors.toList())
                     .forEach(newDefs::append);
 
-            System.out.println("----------------------* " + newDefs);
-
             unitTree.defs = List.from(newDefs);
         }
     }

@@ -6,7 +6,6 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
-import com.sun.tools.javac.util.Name;
 import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.context.Context;
 
