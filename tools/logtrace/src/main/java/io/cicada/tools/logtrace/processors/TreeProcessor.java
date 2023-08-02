@@ -72,23 +72,6 @@ public abstract class TreeProcessor {
         return result;
     }
 
-    Name getSlf4jMethod(String level) {
-        switch (level) {
-            case "Level.ERROR":
-                return names.fromString("error");
-            case "Level.WARN":
-                return names.fromString("warn");
-            case "Level.INFO":
-                return names.fromString("info");
-            case "Level.DEBUG":
-                return names.fromString("debug");
-            case "Level.TRACE":
-                return names.fromString("trace");
-            default:
-                return null;
-        }
-    }
-
     JCTree.JCExpression getExpByClassType(String argName, ClassType classType) {
         switch (classType) {
             case PRIMITIVE:

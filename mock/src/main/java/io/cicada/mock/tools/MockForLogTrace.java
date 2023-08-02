@@ -11,6 +11,7 @@ import java.beans.JavaBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @TestAnno
 @JavaBean
@@ -19,6 +20,8 @@ import java.util.Map;
 public class MockForLogTrace {
 
     private static final String v = "xxxfxx";
+
+    public static final AtomicBoolean isOpen = new AtomicBoolean(true);
 
     public static void main(String[] args) {
         MockForLogTrace m = new MockForLogTrace();
@@ -36,11 +39,11 @@ public class MockForLogTrace {
 
     static final Logger logger = LoggerFactory.getLogger(MockForLogTrace.class);
 
-    @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG)
-    private void testIf(@Ban Integer id,
-                        @Ban List<Integer> names,
-                        @Ban int[] as,
-                        @Ban List<String>[] lists,
+    @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG, isOpen = "io.cicada.mock.tools.config:Test:isOpen")
+    private void testIf(Integer id,
+                        List<Integer> names,
+                        int[] as,
+                        List<String>[] lists,
                         @Ban EmptyInterface emptyInterface) {
         try {
             List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));

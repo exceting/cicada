@@ -1,20 +1,22 @@
-package io.cicada.mock.tools;
+package io.cicada.mock.tools.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class Test {
+
+    public static final AtomicReference<Boolean> isOpen = new AtomicReference<>(false);
 
     private static final Logger trace_logger = LoggerFactory.getLogger(Test.class);
 
     static int VV = 5;
+
     public static void main(String[] args) {
-        String str= "28223479\n" +
+        String str = "28223479\n" +
                 "135652\n" +
                 "140552\n" +
                 "28235123\n" +
@@ -698,7 +700,7 @@ public class Test {
         StringBuilder sb = new StringBuilder();
 
         Set<String> s = new HashSet<>();
-        for(String s1: strs){
+        for (String s1 : strs) {
             sb.append(s1).append(",\n");
         }
         System.out.println(sb);

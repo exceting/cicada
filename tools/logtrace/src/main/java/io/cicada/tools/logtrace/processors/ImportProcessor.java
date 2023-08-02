@@ -20,6 +20,11 @@ public class ImportProcessor extends TreeProcessor {
         super(factory, javacTrees, treeMaker, names);
     }
 
+    @Override
+    public void process(JCTree jcTree) {
+        process(new JCTree[]{jcTree});
+    }
+
     // Import new classes for current Class
     @Override
     public void process(JCTree... jcTrees) {
@@ -46,6 +51,8 @@ public class ImportProcessor extends TreeProcessor {
             unitTree.defs.stream().filter(d -> !d.hasTag(PACKAGEDEF) && !d.hasTag(IMPORT))
                     .collect(Collectors.toList())
                     .forEach(newDefs::append);
+
+            System.out.println("----------------------* " + newDefs);
 
             unitTree.defs = List.from(newDefs);
         }

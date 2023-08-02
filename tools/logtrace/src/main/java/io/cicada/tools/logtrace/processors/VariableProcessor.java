@@ -36,12 +36,9 @@ public class VariableProcessor extends TreeProcessor {
                 newArgs.put(jcVariableDecl.getName().toString(), treeMaker.Ident(jcVariableDecl.getName()));
 
                 oldCode.addNewCode(new Context.MethodConfig.NewCode(oldCode.getOffset() + 1,
-                        treeMaker.Exec(treeMaker.Apply(List.nil(), treeMaker.Select(
-                                treeMaker.Ident(names.fromString(Context.currentLogIdentName.get())),
-                                getSlf4jMethod(methodConfig.getTraceLevel())), List.from(
-                                methodConfig.getLogContent().getLogParams(Tree.Kind.VARIABLE,
-                                        Context.lineMap.get().getLineNumber(jcVariableDecl.getStartPosition()),
-                                        "", newArgs, treeMaker, names))))));
+                        methodConfig.getLogContent()
+                                .getNewCodeStatement(Tree.Kind.VARIABLE, jcVariableDecl,
+                                        "", null, treeMaker, names)));
             }
         }
     }
