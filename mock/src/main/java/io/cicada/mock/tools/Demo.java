@@ -8,6 +8,7 @@ import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import org.slf4j.event.Level;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4jCheck
 public class Demo {
@@ -32,7 +33,11 @@ public class Demo {
         if (id <= 0 || Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("参数不合法！");
         }
+        books.stream().filter(b -> {
+            return true;
+        }).collect(Collectors.toList()).forEach(b -> {
 
+        });
         books = books == null ? getDefaultBooks() : books;
 
         String[] defaultInfos = getDefaultInfos();
