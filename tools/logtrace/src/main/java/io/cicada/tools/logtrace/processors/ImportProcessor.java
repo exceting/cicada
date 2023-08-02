@@ -25,7 +25,11 @@ public class ImportProcessor extends TreeProcessor {
         process(new JCTree[]{jcTree});
     }
 
-    // Import new classes for current Class
+    /**
+     * Import new classes for current Class
+     *
+     * @param jcTrees see {@link JCTree.JCImport}
+     */
     @Override
     public void process(JCTree... jcTrees) {
         if (jcTrees != null) {

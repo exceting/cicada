@@ -17,7 +17,7 @@ public class ClassProcessor extends TreeProcessor {
     static final String LOG_TRACE_BAN_LOOP = "banLoop";
     static final String LOG_TRACE_LEVEL = "traceLevel";
 
-    static final String LOG_TRACE_IS_OPEN = "isOpen";
+    static final String LOG_TRACE_ARRAY_TO_SIZE = "arrayToSize";
 
     ClassProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
@@ -41,6 +41,7 @@ public class ClassProcessor extends TreeProcessor {
                         boolean exceptionLog = false;
                         boolean banLoop = false;
                         String level = "Level.TRACE";
+                        boolean arrayToSize = false;
                         if (anno.getArguments() != null && anno.getArguments().size() > 0) {
                             for (JCTree.JCExpression arg : anno.getArguments()) {
                                 if (!(arg instanceof JCTree.JCAssign)) {
@@ -56,14 +57,18 @@ public class ClassProcessor extends TreeProcessor {
                                 if (LOG_TRACE_LEVEL.equals(assign.lhs.toString())) {
                                     level = assign.rhs.toString();
                                 }
+                                if (LOG_TRACE_ARRAY_TO_SIZE.equals(assign.lhs.toString())) {
+                                    arrayToSize = "true".equals(assign.rhs.toString());
+                                }
                             }
                         }
                         Context.currentMethodConfig.set(new Context.MethodConfig(
                                 def.getName().toString(),
-                                argMap(def.getParameters()),
+                                argMap(def.getParameters(), arrayToSize),
                                 exceptionLog,
                                 banLoop,
-                                level));
+                                level,
+                                arrayToSize));
                         factory.get(ProcessorFactory.Kind.METHOD_DECL).process(def);
                     }
                 });

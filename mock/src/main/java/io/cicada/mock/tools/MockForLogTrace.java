@@ -1,5 +1,6 @@
 package io.cicada.mock.tools;
 
+import io.cicada.mock.tools.config.Test;
 import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.annos.LogTrace;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
@@ -11,6 +12,7 @@ import java.beans.JavaBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @TestAnno
 @JavaBean
@@ -37,7 +39,7 @@ public class MockForLogTrace {
 
 
 
-    @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG)
+    @LogTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)
     private void testIf(Integer id,
                         List<Integer> names,
                         int[] as,
@@ -58,6 +60,7 @@ public class MockForLogTrace {
             boolean sss = isHid();
             Boolean ssss = isHid();
             List sss2 = getList();
+            boolean isOpen = Test.isOpen.get();
             boolean sss3 = false;
             int br = isHid() ? 1 : 2;
             boolean br2 = sss == sss3;

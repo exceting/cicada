@@ -29,7 +29,7 @@ public class MethodProcessor extends TreeProcessor {
 
         Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
 
-        methodConfig.getBlockStack().push(new Context.MethodConfig.OldCode(methodBody));
+        methodConfig.getBlockStack().push(new Context.MethodConfig.OriginCode(methodBody));
 
         try {
             Context.MethodConfig.NewCode startNewCode = new Context.MethodConfig.NewCode(0,

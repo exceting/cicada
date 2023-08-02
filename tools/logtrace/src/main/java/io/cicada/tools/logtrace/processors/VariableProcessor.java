@@ -28,16 +28,15 @@ public class VariableProcessor extends TreeProcessor {
         if (jcVariableDecl.init instanceof JCTree.JCConditional
                 || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
             // Get current block.
-            Context.MethodConfig.OldCode oldCode = Context.currentMethodConfig.get().getBlockStack().peek();
-            if (oldCode != null) {
+            Context.MethodConfig.OriginCode originCode = Context.currentMethodConfig.get().getBlockStack().peek();
+            if (originCode != null) {
                 Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
                 Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
                 newArgs.put(jcVariableDecl.getName().toString(), treeMaker.Ident(jcVariableDecl.getName()));
-
-                oldCode.addNewCode(new Context.MethodConfig.NewCode(oldCode.getOffset() + 1,
+                originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset() + 1,
                         methodConfig.getLogContent()
                                 .getNewCodeStatement(Tree.Kind.VARIABLE, jcVariableDecl,
-                                        "", null, treeMaker, names)));
+                                        "", newArgs, treeMaker, names)));
             }
         }
     }

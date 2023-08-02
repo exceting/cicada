@@ -74,10 +74,10 @@ public class Demo {
                 // do nothing
         }
 
-        switch (kind){
-            case IMPORT:
+        switch (kind.name()) {
+            case "IMPORT":
                 break;
-            case ROOT:
+            case "ROOT":
                 break;
             default:
         }

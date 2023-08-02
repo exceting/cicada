@@ -21,17 +21,17 @@ public class BlockProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCBlock)) {
             return;
         }
-        Context.MethodConfig.OldCode oldCode = new Context.MethodConfig.OldCode((JCTree.JCBlock) jcTree);
-        Context.currentMethodConfig.get().getBlockStack().push(oldCode);
+        Context.MethodConfig.OriginCode originCode = new Context.MethodConfig.OriginCode((JCTree.JCBlock) jcTree);
+        Context.currentMethodConfig.get().getBlockStack().push(originCode);
         try {
-            if (oldCode.getBlock().getStatements() == null || oldCode.getBlock().getStatements().size() == 0) {
+            if (originCode.getBlock().getStatements() == null || originCode.getBlock().getStatements().size() == 0) {
                 return;
             }
-            for (JCTree.JCStatement statement : oldCode.getBlock().getStatements()) {
+            for (JCTree.JCStatement statement : originCode.getBlock().getStatements()) {
                 factory.get(statement.getKind()).process(statement);
-                oldCode.incrOffset();
+                originCode.incrOffset();
             }
-            oldCode.getBlock().stats = attachCode(oldCode.getBlock().stats, oldCode.getNewCodes());
+            originCode.getBlock().stats = attachCode(originCode.getBlock().stats, originCode.getNewCodes());
         } finally {
             // Pop block.
             Context.currentMethodConfig.get().getBlockStack().pop();

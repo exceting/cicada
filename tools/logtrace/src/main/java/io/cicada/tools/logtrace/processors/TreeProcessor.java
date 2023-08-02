@@ -49,7 +49,7 @@ public abstract class TreeProcessor {
         this.names = names;
     }
 
-    Map<String, JCTree.JCExpression> argMap(List<JCTree.JCVariableDecl> originalArgs) {
+    Map<String, JCTree.JCExpression> argMap(List<JCTree.JCVariableDecl> originalArgs, boolean arrayToSize) {
         if (originalArgs == null || originalArgs.size() == 0) {
             return null;
         }
@@ -65,8 +65,8 @@ public abstract class TreeProcessor {
             return banAnnos.size() == 0;
         }).forEach(oa -> {
             String argName = oa.getName().toString();
-            result.put(argName, getExpByClassType(argName, getClassType(oa.getType()
-                    .type.tsym.getQualifiedName().toString())));
+            result.put(argName, arrayToSize ? getExpByClassType(argName, getClassType(oa.getType()
+                    .type.tsym.getQualifiedName().toString())) : treeMaker.Ident(names.fromString(argName)));
         });
         return result;
     }

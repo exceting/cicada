@@ -32,7 +32,8 @@ public @interface LogTrace {
     Level traceLevel() default Level.TRACE;
 
     /**
-     * Log language, 0: English, 1: 简体汉语, 2: 繁體漢語, 3: 日本語.
+     * If true, the collection/array parameters in your method will only print their size,
+     * and the specific contents will not be printed.
      */
-    int language() default 0;
+    boolean arrayToSize() default false;
 }
