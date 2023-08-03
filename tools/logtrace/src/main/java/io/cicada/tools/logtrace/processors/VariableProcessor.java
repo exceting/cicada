@@ -25,7 +25,13 @@ public class VariableProcessor extends TreeProcessor {
             return;
         }
         JCTree.JCVariableDecl jcVariableDecl = (JCTree.JCVariableDecl) jcTree;
-        if (jcVariableDecl.init instanceof JCTree.JCConditional
+
+        if (jcVariableDecl.init != null) {
+            System.out.println("----------+++=== "+jcVariableDecl.init.getKind());
+            factory.get(jcVariableDecl.init.getKind()).process(jcVariableDecl.init);
+        }
+        //System.out.println("=====  " + jcVariableDecl.init + "     " + jcVariableDecl.init.getKind() + "    " + jcVariableDecl.init.getClass());
+        if (null instanceof JCTree.JCConditional
                 || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
             // Get current block.
             Context.MethodConfig.OriginCode originCode = Context.currentMethodConfig.get().getBlockStack().peek();

@@ -10,7 +10,7 @@ import org.slf4j.event.Level;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Slf4jCheck
+
 public class Demo {
 
     //@LogTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)

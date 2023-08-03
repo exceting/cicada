@@ -37,6 +37,9 @@ public class ProcessorFactory {
         processorMap.put(Tree.Kind.DO_WHILE_LOOP, new DoWhileLoopProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.VARIABLE, new VariableProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.SWITCH, new SwitchProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.METHOD_INVOCATION, new MethodInvocationProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.LAMBDA_EXPRESSION, new LambdaExpressionProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.MEMBER_SELECT, new FieldAccessProcessor(this, javacTrees, treeMaker, names));
     }
 
     public TreeProcessor get(Kind kind) {
