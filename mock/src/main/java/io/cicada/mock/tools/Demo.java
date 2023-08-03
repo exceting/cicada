@@ -8,6 +8,7 @@ import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import org.slf4j.event.Level;
 
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 
@@ -20,6 +21,13 @@ public class Demo {
     public static void main(String[] args) {
         Demo demo = new Demo();
         demo.demoMethod(11, "hehehe", null, new String[]{"xxx"}, null, Kind.ROOT);
+    }
+
+    public static void t(BiFunction<String, String, String> bf) {
+        String r = bf.apply(null, "2nd param");
+        if (!Strings.isNullOrEmpty(r)) {
+            System.out.println(r);
+        }
     }
 
     @LogTrace(traceLevel = Level.DEBUG)

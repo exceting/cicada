@@ -6,7 +6,7 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 
 /**
- * A processor for handling Expression.
+ * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#CONDITIONAL_EXPRESSION}.
  */
 public class ConditionalProcessor extends TreeProcessor {
 
@@ -17,7 +17,7 @@ public class ConditionalProcessor extends TreeProcessor {
     // TODO IF-STATEMENT conditional process.
     @Override
     public void process(JCTree jcTree) {
-        if (jcTree instanceof JCTree.JCParens) {
+        /*if (jcTree instanceof JCTree.JCParens) {
             JCTree.JCParens parens = (JCTree.JCParens) jcTree;
             process(parens.getExpression());
         } else if (jcTree instanceof JCTree.JCBinary) {
@@ -34,6 +34,6 @@ public class ConditionalProcessor extends TreeProcessor {
             JCTree.JCInstanceOf instanceOf = (JCTree.JCInstanceOf) jcTree;
         } else {
             // do nothing.
-        }
+        }*/
     }
 }

@@ -6,6 +6,17 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 
+/**
+ * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#TRY}.
+ * eg:
+ * try {
+ * //...
+ * } catch(Exception e) {
+ * //...
+ * }finally{
+ * //...
+ * }
+ */
 public class TryProcessor extends TreeProcessor {
 
     TryProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {

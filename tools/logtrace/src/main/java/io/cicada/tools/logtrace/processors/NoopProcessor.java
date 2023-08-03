@@ -5,6 +5,9 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 
+/**
+ * Default processor, do nothing.
+ */
 public class NoopProcessor extends TreeProcessor {
 
     NoopProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {

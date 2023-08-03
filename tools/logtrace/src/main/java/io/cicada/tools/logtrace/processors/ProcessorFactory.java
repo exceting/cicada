@@ -40,6 +40,7 @@ public class ProcessorFactory {
         processorMap.put(Tree.Kind.METHOD_INVOCATION, new MethodInvocationProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.LAMBDA_EXPRESSION, new LambdaExpressionProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.MEMBER_SELECT, new FieldAccessProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.EXPRESSION_STATEMENT, new ExpressionStatementProcessor(this, javacTrees, treeMaker, names));
     }
 
     public TreeProcessor get(Kind kind) {

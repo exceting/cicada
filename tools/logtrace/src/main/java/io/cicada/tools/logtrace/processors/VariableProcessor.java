@@ -10,6 +10,11 @@ import io.cicada.tools.logtrace.context.Context;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#VARIABLE}.
+ * eg:
+ * int a = 1;
+ */
 public class VariableProcessor extends TreeProcessor {
 
     VariableProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
@@ -27,10 +32,8 @@ public class VariableProcessor extends TreeProcessor {
         JCTree.JCVariableDecl jcVariableDecl = (JCTree.JCVariableDecl) jcTree;
 
         if (jcVariableDecl.init != null) {
-            System.out.println("----------+++=== "+jcVariableDecl.init.getKind());
             factory.get(jcVariableDecl.init.getKind()).process(jcVariableDecl.init);
         }
-        //System.out.println("=====  " + jcVariableDecl.init + "     " + jcVariableDecl.init.getKind() + "    " + jcVariableDecl.init.getClass());
         if (null instanceof JCTree.JCConditional
                 || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
             // Get current block.

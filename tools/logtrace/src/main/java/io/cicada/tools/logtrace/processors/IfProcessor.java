@@ -8,7 +8,7 @@ import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
 
 /**
- * A processor for handling IF statement.
+ * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#IF}.
  * eg:
  * if(cond) {
  * // ...

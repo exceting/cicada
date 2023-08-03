@@ -7,7 +7,7 @@ import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
 
 /**
- * A processor for handling BLOCK statement.
+ * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#BLOCK}.
  * eg: {}
  */
 public class BlockProcessor extends TreeProcessor {
@@ -28,6 +28,7 @@ public class BlockProcessor extends TreeProcessor {
                 return;
             }
             for (JCTree.JCStatement statement : originCode.getBlock().getStatements()) {
+                System.out.println("+++++ "+statement+"    "+statement.getKind());
                 factory.get(statement.getKind()).process(statement);
                 originCode.incrOffset();
             }

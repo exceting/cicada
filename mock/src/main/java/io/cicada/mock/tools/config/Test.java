@@ -1,6 +1,8 @@
 package io.cicada.mock.tools.config;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
+import io.cicada.mock.tools.Demo;
 import io.cicada.tools.logtrace.annos.LogTrace;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import org.slf4j.event.Level;
@@ -8,7 +10,6 @@ import org.slf4j.event.Level;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4jCheck
@@ -33,6 +34,14 @@ public class Test {
             }
             return s;
         }).collect(Collectors.toList());
+
+        Demo.t((t, u) -> {
+            if (Strings.isNullOrEmpty(t) || Strings.isNullOrEmpty(u)) {
+                System.out.println("t or u is empty!");
+                return "";
+            }
+            return String.format("%s . %s", t, u);
+        });
     }
 
 

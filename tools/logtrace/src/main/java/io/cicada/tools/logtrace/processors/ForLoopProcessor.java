@@ -7,6 +7,13 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
 
+/**
+ * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#FOR_LOOP}.
+ * eg:
+ * for(int i = 0; i < length; i++) {
+ * //...
+ * }
+ */
 public class ForLoopProcessor extends TreeProcessor {
     ForLoopProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
