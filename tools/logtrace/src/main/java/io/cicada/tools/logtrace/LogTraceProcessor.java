@@ -16,7 +16,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
 import java.util.*;
 
-public class AnnoProcessor extends AbstractProcessor {
+public class LogTraceProcessor extends AbstractProcessor {
     private ProcessorFactory factory;
 
     @Override
@@ -51,7 +51,7 @@ public class AnnoProcessor extends AbstractProcessor {
         for (TypeElement t : annotations) {
             for (Element e : roundEnv.getElementsAnnotatedWith(t)) {
                 io.cicada.tools.logtrace.context.Context.currentElement.set(e);
-                factory.get(ProcessorFactory.Kind.ROOT).process();
+                factory.get(ProcessorFactory.Kind.STARTER).process();
                 io.cicada.tools.logtrace.context.Context.currentElement.remove();
             }
         }

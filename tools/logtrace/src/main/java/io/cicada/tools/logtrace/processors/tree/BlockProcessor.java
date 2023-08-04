@@ -1,10 +1,12 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.tree;
 
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 /**
  * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#BLOCK}.
@@ -12,7 +14,7 @@ import io.cicada.tools.logtrace.context.Context;
  */
 public class BlockProcessor extends TreeProcessor {
 
-    BlockProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public BlockProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
@@ -28,8 +30,7 @@ public class BlockProcessor extends TreeProcessor {
                 return;
             }
             for (JCTree.JCStatement statement : originCode.getBlock().getStatements()) {
-                System.out.println("+++++ "+statement+"    "+statement.getKind());
-                factory.get(statement.getKind()).process(statement);
+                getFactory().get(statement.getKind()).process(statement);
                 originCode.incrOffset();
             }
             originCode.getBlock().stats = attachCode(originCode.getBlock().stats, originCode.getNewCodes());

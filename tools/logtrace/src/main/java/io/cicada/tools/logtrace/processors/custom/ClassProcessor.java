@@ -1,4 +1,4 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.custom;
 
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
@@ -6,6 +6,8 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.annos.LogTrace;
 import io.cicada.tools.logtrace.context.Context;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 import java.util.Objects;
 
@@ -19,7 +21,7 @@ public class ClassProcessor extends TreeProcessor {
 
     static final String LOG_TRACE_ARRAY_TO_SIZE = "arrayToSize";
 
-    ClassProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public ClassProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
@@ -69,7 +71,7 @@ public class ClassProcessor extends TreeProcessor {
                                 banLoop,
                                 level,
                                 arrayToSize));
-                        factory.get(ProcessorFactory.Kind.METHOD_DECL).process(def);
+                        getFactory().get(ProcessorFactory.Kind.METHOD).process(def);
                     }
                 });
     }

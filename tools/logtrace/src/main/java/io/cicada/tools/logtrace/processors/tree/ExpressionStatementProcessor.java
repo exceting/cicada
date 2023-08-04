@@ -1,15 +1,20 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.tree;
 
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 /**
  * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#EXPRESSION_STATEMENT}.
+ * <pre>
+ *     expression ;
+ * </pre>
  */
 public class ExpressionStatementProcessor extends TreeProcessor {
-    ExpressionStatementProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public ExpressionStatementProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
@@ -21,7 +26,7 @@ public class ExpressionStatementProcessor extends TreeProcessor {
         JCTree.JCExpressionStatement expressionStatement = (JCTree.JCExpressionStatement) jcTree;
         JCTree.JCExpression expression = expressionStatement.getExpression();
         if (expression != null) {
-            factory.get(expression.getKind()).process(expression);
+            getFactory().get(expression.getKind()).process(expression);
         }
     }
 }

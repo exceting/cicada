@@ -1,4 +1,4 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.tree;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
@@ -6,6 +6,8 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,16 +15,25 @@ import java.util.Map;
 /**
  * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#VARIABLE}.
  * eg:
- * int a = 1;
+ * <pre>
+ *     modifiers type name initializer ;
+ *     modifiers type qualified-name.this
+ * </pre>
  */
 public class VariableProcessor extends TreeProcessor {
 
-    VariableProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public VariableProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
     /**
-     * Only process conditional and method invoke.
+     * Only process local variable, and the init value form conditional or method invoke.
+     * eg:
+     * <pre>
+     *     int a = conditional ? value1 : value2;
+     *     int b = getB();
+     *     int c = 1; // Not process!
+     * </pre>
      */
     @Override
     public void process(JCTree jcTree) {
@@ -30,10 +41,10 @@ public class VariableProcessor extends TreeProcessor {
             return;
         }
         JCTree.JCVariableDecl jcVariableDecl = (JCTree.JCVariableDecl) jcTree;
-
         if (jcVariableDecl.init != null) {
-            factory.get(jcVariableDecl.init.getKind()).process(jcVariableDecl.init);
+            getFactory().get(jcVariableDecl.init.getKind()).process(jcVariableDecl.init);
         }
+
         if (null instanceof JCTree.JCConditional
                 || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
             // Get current block.
@@ -41,11 +52,11 @@ public class VariableProcessor extends TreeProcessor {
             if (originCode != null) {
                 Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
                 Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
-                newArgs.put(jcVariableDecl.getName().toString(), treeMaker.Ident(jcVariableDecl.getName()));
-                originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset() + 1,
+                newArgs.put(jcVariableDecl.getName().toString(), getTreeMaker().Ident(jcVariableDecl.getName()));
+                originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset() + 1, // Next line.
                         methodConfig.getLogContent()
                                 .getNewCodeStatement(Tree.Kind.VARIABLE, jcVariableDecl,
-                                        "", newArgs, treeMaker, names)));
+                                        "", newArgs, getTreeMaker(), getNames())));
             }
         }
     }

@@ -1,4 +1,4 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.custom;
 
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
@@ -8,6 +8,8 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Name;
 import io.cicada.tools.logtrace.context.Context;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -15,7 +17,7 @@ import java.util.Map;
 public class MethodProcessor extends TreeProcessor {
 
 
-    MethodProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public MethodProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
@@ -34,25 +36,25 @@ public class MethodProcessor extends TreeProcessor {
         try {
             Context.MethodConfig.NewCode startNewCode = new Context.MethodConfig.NewCode(0,
                     methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.METHOD, methodBody,
-                            "Start!", null, treeMaker, names));
+                            "Start!", null, getTreeMaker(), getNames()));
 
-            factory.get(Tree.Kind.BLOCK).process(methodBody);
+            getFactory().get(Tree.Kind.BLOCK).process(methodBody);
 
             methodBody.stats = attachCode(methodBody.stats, startNewCode);
 
             // Add try-catch statement.
             if (methodConfig.isExceptionLog()) {
-                Name e = names.fromString("e");
-                JCTree.JCIdent eIdent = treeMaker.Ident(e);
+                Name e = getNames().fromString("e");
+                JCTree.JCIdent eIdent = getTreeMaker().Ident(e);
                 Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
                 newArgs.put(null, eIdent);
-                JCTree.JCCatch jcCatch = treeMaker.Catch(treeMaker.VarDef(treeMaker.Modifiers(0), e,
-                                treeMaker.Ident(names.fromString("Exception")), null),
-                        treeMaker.Block(0L, List.of(methodConfig.getLogContent()
+                JCTree.JCCatch jcCatch = getTreeMaker().Catch(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), e,
+                                getTreeMaker().Ident(getNames().fromString("Exception")), null),
+                        getTreeMaker().Block(0L, List.of(methodConfig.getLogContent()
                                 .getNewCodeStatement(Tree.Kind.TRY, methodBody,
-                                        "Error!", newArgs, treeMaker, names), treeMaker.Throw(eIdent))));
+                                        "Error!", newArgs, getTreeMaker(), getNames()), getTreeMaker().Throw(eIdent))));
 
-                methodBody.stats = List.of(treeMaker.Try(treeMaker.Block(methodBody.flags, methodBody.stats),
+                methodBody.stats = List.of(getTreeMaker().Try(getTreeMaker().Block(methodBody.flags, methodBody.stats),
                         List.of(jcCatch), null));
             }
         } finally {

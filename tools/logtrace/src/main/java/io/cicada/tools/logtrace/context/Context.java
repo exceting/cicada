@@ -2,7 +2,8 @@ package io.cicada.tools.logtrace.context;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Position;
-import io.cicada.tools.logtrace.processors.RootProcessor;
+import io.cicada.tools.logtrace.processors.custom.StarterProcessor;
+import io.cicada.tools.logtrace.processors.custom.ClassProcessor;
 
 import javax.lang.model.element.Element;
 import java.util.*;
@@ -11,25 +12,25 @@ public class Context {
 
     /**
      * The code line map.
-     * Refresh in {@link RootProcessor#process()}
+     * Refresh in {@link StarterProcessor#process()}
      */
     public static final ThreadLocal<Position.LineMap> lineMap = new ThreadLocal<>();
 
     /**
      * The log obj ident.
-     * Refresh in {@link RootProcessor#process()}
+     * Refresh in {@link StarterProcessor#process()}
      */
     public static final ThreadLocal<String> currentLogIdentName = new ThreadLocal<>();
 
     /**
      * Master switch obj ident.
-     * Refresh in {@link RootProcessor#process()}
+     * Refresh in {@link StarterProcessor#process()}
      */
     public static final ThreadLocal<String> currentIsOpenIdentName = new ThreadLocal<>();
 
     /**
      * The method annotation config.
-     * Refresh in {@link io.cicada.tools.logtrace.processors.ClassProcessor#process(JCTree)}
+     * Refresh in {@link ClassProcessor#process(JCTree)}
      */
     public static final ThreadLocal<MethodConfig> currentMethodConfig = new ThreadLocal<>();
 

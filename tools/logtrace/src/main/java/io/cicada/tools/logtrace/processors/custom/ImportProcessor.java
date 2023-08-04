@@ -1,4 +1,4 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.custom;
 
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.api.JavacTrees;
@@ -8,6 +8,8 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 import java.util.stream.Collectors;
 
@@ -16,7 +18,7 @@ import static com.sun.tools.javac.tree.JCTree.Tag.PACKAGEDEF;
 
 public class ImportProcessor extends TreeProcessor {
 
-    ImportProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public ImportProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
@@ -34,7 +36,7 @@ public class ImportProcessor extends TreeProcessor {
     public void process(JCTree... jcTrees) {
         if (jcTrees != null) {
 
-            final TreePath treePath = javacTrees.getPath(Context.currentElement.get());
+            final TreePath treePath = getJavacTrees().getPath(Context.currentElement.get());
             final JCTree.JCCompilationUnit unitTree = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
 
             ListBuffer<JCTree> newDefs = new ListBuffer<>();

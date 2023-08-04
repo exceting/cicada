@@ -1,18 +1,23 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.tree;
 
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 /**
  * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#METHOD_INVOCATION}.
  * eg:
- * a.b();
+ * <pre>
+ *     identifier ( arguments )
+ *     this . typeArguments identifier ( arguments )
+ * </pre>
  */
 public class MethodInvocationProcessor extends TreeProcessor {
 
-    MethodInvocationProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public MethodInvocationProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
@@ -21,13 +26,14 @@ public class MethodInvocationProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCMethodInvocation)) {
             return;
         }
+
         JCTree.JCMethodInvocation methodInvocation = (JCTree.JCMethodInvocation) jcTree;
-        //System.out.println("+++++++++++  "+methodInvocation+"   "+methodInvocation.getKind());
-        if (methodInvocation.args != null && methodInvocation.args.size() > 0) {
-            methodInvocation.args.forEach(arg -> factory.get(arg.getKind()).process(arg));
+        if (methodInvocation.getArguments() != null && methodInvocation.getArguments().size() > 0) {
+            methodInvocation.getArguments().forEach(arg -> getFactory().get(arg.getKind()).process(arg));
         }
+
         if (methodInvocation.getMethodSelect() != null) {
-            factory.get(methodInvocation.getMethodSelect().getKind()).process(methodInvocation.getMethodSelect());
+            getFactory().get(methodInvocation.getMethodSelect().getKind()).process(methodInvocation.getMethodSelect());
         }
     }
 }

@@ -42,14 +42,14 @@ public abstract class TreeProcessor {
         // do nothing
     }
 
-    TreeProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public TreeProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         this.factory = factory;
         this.javacTrees = javacTrees;
         this.treeMaker = treeMaker;
         this.names = names;
     }
 
-    Map<String, JCTree.JCExpression> argMap(List<JCTree.JCVariableDecl> originalArgs, boolean arrayToSize) {
+    public Map<String, JCTree.JCExpression> argMap(List<JCTree.JCVariableDecl> originalArgs, boolean arrayToSize) {
         if (originalArgs == null || originalArgs.size() == 0) {
             return null;
         }
@@ -119,18 +119,18 @@ public abstract class TreeProcessor {
      * @param attached new code statement
      * @return The new method statements which contains new code.
      */
-    List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        Context.MethodConfig.NewCode attached) {
+    public List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
+                                               Context.MethodConfig.NewCode attached) {
         return attachCode(stats, List.of(attached));
     }
 
-    List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        java.util.List<Context.MethodConfig.NewCode> attached) {
+    public List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
+                                               java.util.List<Context.MethodConfig.NewCode> attached) {
         return attachCode(stats, List.from(attached));
     }
 
-    List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                        List<Context.MethodConfig.NewCode> attached) {
+    public List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
+                                               List<Context.MethodConfig.NewCode> attached) {
 
         if (attached == null || attached.size() == 0) {
             return stats;
@@ -197,6 +197,22 @@ public abstract class TreeProcessor {
         } catch (ClassNotFoundException e) {
             return ClassType.CLASS_NOT_FOUND;
         }
+    }
+
+    public ProcessorFactory getFactory() {
+        return factory;
+    }
+
+    public JavacTrees getJavacTrees() {
+        return javacTrees;
+    }
+
+    public TreeMaker getTreeMaker() {
+        return treeMaker;
+    }
+
+    public Names getNames() {
+        return names;
     }
 
     public enum ClassType {

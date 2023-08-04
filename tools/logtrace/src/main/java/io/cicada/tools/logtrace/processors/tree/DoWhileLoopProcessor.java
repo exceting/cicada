@@ -1,21 +1,24 @@
-package io.cicada.tools.logtrace.processors;
+package io.cicada.tools.logtrace.processors.tree;
 
-import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
+import io.cicada.tools.logtrace.processors.ProcessorFactory;
+import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 /**
  * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#DO_WHILE_LOOP}.
  * eg:
- * do {
- * //...
- * } while(true)
+ * <pre>
+ *     do
+ *         statement
+ *     while ( expression );
+ * </pre>
  */
 public class DoWhileLoopProcessor extends TreeProcessor {
-    DoWhileLoopProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
+    public DoWhileLoopProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
 
@@ -28,8 +31,11 @@ public class DoWhileLoopProcessor extends TreeProcessor {
             return;
         }
         JCTree.JCDoWhileLoop doWhileLoop = (JCTree.JCDoWhileLoop) jcTree;
-        // TODO The cond may should be processed.
-        // doWhileLoop.cond
-        factory.get(Tree.Kind.BLOCK).process(doWhileLoop.body);
+        if (doWhileLoop.getStatement() != null) {
+            getFactory().get(doWhileLoop.getStatement().getKind()).process(doWhileLoop.getStatement());
+        }
+        if (doWhileLoop.getCondition() != null) {
+            getFactory().get(doWhileLoop.getCondition().getKind()).process(doWhileLoop.getCondition());
+        }
     }
 }
