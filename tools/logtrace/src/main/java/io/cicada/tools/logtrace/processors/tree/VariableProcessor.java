@@ -45,7 +45,7 @@ public class VariableProcessor extends TreeProcessor {
             getFactory().get(jcVariableDecl.init.getKind()).process(jcVariableDecl.init);
         }
 
-        if (null instanceof JCTree.JCConditional
+        if (jcVariableDecl.init instanceof JCTree.JCConditional
                 || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
             // Get current block.
             Context.MethodConfig.OriginCode originCode = Context.currentMethodConfig.get().getBlockStack().peek();

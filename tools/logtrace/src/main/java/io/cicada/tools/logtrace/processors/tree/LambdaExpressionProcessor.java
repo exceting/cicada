@@ -34,7 +34,6 @@ public class LambdaExpressionProcessor extends TreeProcessor {
         /*if(jcLambda.getParameters() != null && jcLambda.getParameters().size() > 0){
             jcLambda.getParameters().forEach(p-> getFactory().get(p.getKind()).process(p));
         }*/
-
         if (jcLambda.getBody() != null) {
             getFactory().get(jcLambda.getBody().getKind()).process(jcLambda.getBody());
         }

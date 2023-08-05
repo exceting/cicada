@@ -1,5 +1,6 @@
 package io.cicada.mock.tools;
 
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.cicada.mock.tools.config.Test;
@@ -29,6 +30,17 @@ public class Test2 {
             if (i == 2) {
                 System.out.println(i);
             }
+        }
+
+        if (((Predicate<Object>) input -> {
+            if (input != null) {
+                return (Boolean) input;
+            } else {
+                System.out.println("input is null!!");
+            }
+            return false;
+        }).test(true)) {
+            System.out.println("xxxx");
         }
 
         if (isHid()) {
@@ -66,7 +78,6 @@ public class Test2 {
 
         stringList.forEach(i -> {
             if (Strings.isNullOrEmpty(i)) {
-
             } else {
                 System.out.println(i);
             }
