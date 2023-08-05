@@ -88,8 +88,6 @@ public abstract class TreeProcessor {
         }
     }
 
-    //
-
     /**
      * @param argName  obj name, eg: a
      * @param attrName field or method name, eg: .length, .size()
@@ -113,33 +111,33 @@ public abstract class TreeProcessor {
     }
 
     /**
-     * Attach new code for method
+     * Generate new code.
      *
-     * @param stats    original code statements
-     * @param attached new code statement
+     * @param stats     original code
+     * @param generated new code
      * @return The new method statements which contains new code.
      */
-    public List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                               Context.MethodConfig.NewCode attached) {
-        return attachCode(stats, List.of(attached));
+    public List<JCTree.JCStatement> generateCode(List<JCTree.JCStatement> stats,
+                                                 Context.MethodConfig.NewCode generated) {
+        return generateCode(stats, List.of(generated));
     }
 
-    public List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                               java.util.List<Context.MethodConfig.NewCode> attached) {
-        return attachCode(stats, List.from(attached));
+    public List<JCTree.JCStatement> generateCode(List<JCTree.JCStatement> stats,
+                                                 java.util.List<Context.MethodConfig.NewCode> generated) {
+        return generateCode(stats, List.from(generated));
     }
 
-    public List<JCTree.JCStatement> attachCode(List<JCTree.JCStatement> stats,
-                                               List<Context.MethodConfig.NewCode> attached) {
+    public List<JCTree.JCStatement> generateCode(List<JCTree.JCStatement> stats,
+                                                 List<Context.MethodConfig.NewCode> generated) {
 
-        if (attached == null || attached.size() == 0) {
+        if (generated == null || generated.size() == 0) {
             return stats;
         }
 
         List<JCTree.JCStatement> result = List.nil();
         int offset = 0;
 
-        for (Context.MethodConfig.NewCode newCode : attached) {
+        for (Context.MethodConfig.NewCode newCode : generated) {
             int newOffset = newCode.getOffset();
             while (offset < newOffset) {
                 result = result.append(stats.get(offset));

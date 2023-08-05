@@ -42,6 +42,7 @@ public class StarterProcessor extends TreeProcessor {
         Context.lineMap.set(unitTree.getLineMap());
         final List<JCTree.JCImport> imports = unitTree.getImports();
         final JCTree.JCClassDecl classDecl = (JCTree.JCClassDecl) getJavacTrees().getTree(e);
+        getTreeMaker().pos = classDecl.pos; // Reset pos.
         final List<JCTree.JCAnnotation> annos = classDecl.mods.annotations; // All annotations of this Class
 
         final List<String> importClasses = imports.stream()
@@ -98,8 +99,6 @@ public class StarterProcessor extends TreeProcessor {
 
                     // Generate static block to init is_open.
                     classDecl.defs = classDecl.defs.append(getInitIsOpenStatement(assign.rhs.toString(), isOpenIdentName));
-
-                    System.out.println("=======" + classDecl);
                 }
             }
         }

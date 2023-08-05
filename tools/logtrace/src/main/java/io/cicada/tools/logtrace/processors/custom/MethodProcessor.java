@@ -34,28 +34,34 @@ public class MethodProcessor extends TreeProcessor {
         methodConfig.getBlockStack().push(new Context.MethodConfig.OriginCode(methodBody));
 
         try {
-            Context.MethodConfig.NewCode startNewCode = new Context.MethodConfig.NewCode(0,
-                    methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.METHOD, methodBody,
-                            "Start!", null, getTreeMaker(), getNames()));
-
-            getFactory().get(Tree.Kind.BLOCK).process(methodBody);
-
-            methodBody.stats = attachCode(methodBody.stats, startNewCode);
+            getFactory().get(methodBody.getKind()).process(methodBody);
+            methodBody.accept(new JCTree.Visitor() {
+                @Override
+                public void visitBlock(JCTree.JCBlock that) {
+                    that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0,
+                            methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.METHOD, methodBody,
+                                    "Start!", null, getTreeMaker(), getNames())));
+                }
+            });
 
             // Generate try-catch statement.
             if (methodConfig.isExceptionLog()) {
-                Name e = getNames().fromString("e");
-                JCTree.JCIdent eIdent = getTreeMaker().Ident(e);
-                Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
-                newArgs.put(null, eIdent);
-                JCTree.JCCatch jcCatch = getTreeMaker().Catch(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), e,
-                                getTreeMaker().Ident(getNames().fromString("Exception")), null),
-                        getTreeMaker().Block(0L, List.of(methodConfig.getLogContent()
-                                .getNewCodeStatement(Tree.Kind.TRY, methodBody,
-                                        "Error!", newArgs, getTreeMaker(), getNames()), getTreeMaker().Throw(eIdent))));
-
-                methodBody.stats = List.of(getTreeMaker().Try(getTreeMaker().Block(methodBody.flags, methodBody.stats),
-                        List.of(jcCatch), null));
+                methodBody.accept(new JCTree.Visitor() {
+                    @Override
+                    public void visitBlock(JCTree.JCBlock that) {
+                        Name e = getNames().fromString("e");
+                        JCTree.JCIdent eIdent = getTreeMaker().Ident(e);
+                        Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
+                        newArgs.put(null, eIdent);
+                        JCTree.JCCatch jcCatch = getTreeMaker().Catch(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), e,
+                                        getTreeMaker().Ident(getNames().fromString("Exception")), null),
+                                getTreeMaker().Block(0L, List.of(methodConfig.getLogContent()
+                                        .getNewCodeStatement(Tree.Kind.TRY, methodBody,
+                                                "Error!", newArgs, getTreeMaker(), getNames()), getTreeMaker().Throw(eIdent))));
+                        that.stats = List.of(getTreeMaker().Try(getTreeMaker().Block(methodBody.flags, methodBody.stats),
+                                List.of(jcCatch), null));
+                    }
+                });
             }
         } finally {
             methodConfig.getBlockStack().pop();

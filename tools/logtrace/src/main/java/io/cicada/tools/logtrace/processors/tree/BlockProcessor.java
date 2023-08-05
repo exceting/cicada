@@ -33,7 +33,12 @@ public class BlockProcessor extends TreeProcessor {
                 getFactory().get(statement.getKind()).process(statement);
                 originCode.incrOffset();
             }
-            originCode.getBlock().stats = attachCode(originCode.getBlock().stats, originCode.getNewCodes());
+            originCode.getBlock().accept(new JCTree.Visitor() {
+                @Override
+                public void visitBlock(JCTree.JCBlock that) {
+                    that.stats = generateCode(that.getStatements(), originCode.getNewCodes());
+                }
+            });
         } finally {
             // Pop block.
             Context.currentMethodConfig.get().getBlockStack().pop();

@@ -21,7 +21,7 @@ public class Test2 {
         t2.t(null, "");
     }
 
-    @LogTrace(exceptionLog = false, banLoop = true, traceLevel = Level.DEBUG)
+    @LogTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)
     public void t(Object o, @Ban String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
         List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));

@@ -36,13 +36,18 @@ public class SwitchProcessor extends TreeProcessor {
         if (jcSwitch.getCases() != null && jcSwitch.getCases().size() > 0) {
             Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
             for (JCTree.JCCase jcCase : jcSwitch.getCases()) {
-                jcCase.stats = attachCode(jcCase.stats, new Context.MethodConfig.NewCode(0,
-                        methodConfig.getLogContent()
-                                .getNewCodeStatement(Tree.Kind.SWITCH, jcCase,
-                                        String.format("Switch%s case %s is true!",
-                                                jcSwitch.selector,
-                                                jcCase.getExpression() == null ? "default" : jcCase.getExpression()),
-                                        null, getTreeMaker(), getNames())));
+                jcCase.accept(new JCTree.Visitor() {
+                    @Override
+                    public void visitCase(JCTree.JCCase that) {
+                        that.stats = generateCode(jcCase.stats, new Context.MethodConfig.NewCode(0,
+                                methodConfig.getLogContent()
+                                        .getNewCodeStatement(Tree.Kind.SWITCH, jcCase,
+                                                String.format("Switch%s case %s is true!",
+                                                        jcSwitch.selector,
+                                                        jcCase.getExpression() == null ? "default" : jcCase.getExpression()),
+                                                null, getTreeMaker(), getNames())));
+                    }
+                });
             }
         }
 

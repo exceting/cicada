@@ -22,6 +22,7 @@ public class ProcessorFactory {
     public ProcessorFactory(JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         baseProcessorMap = new HashMap<>();
         processorMap = new HashMap<>();
+
         baseProcessorMap.put(Kind.STARTER, new StarterProcessor(this, javacTrees, treeMaker, names));
         baseProcessorMap.put(Kind.IMPORT, new ImportProcessor(this, javacTrees, treeMaker, names));
         baseProcessorMap.put(Kind.CLASS, new ClassProcessor(this, javacTrees, treeMaker, names));

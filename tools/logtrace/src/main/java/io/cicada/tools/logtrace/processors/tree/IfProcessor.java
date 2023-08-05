@@ -4,7 +4,6 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
-import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
@@ -41,30 +40,36 @@ public class IfProcessor extends TreeProcessor {
                 getFactory().get(jcIf.getCondition().getKind()).process(jcIf.getCondition());
             }
 
-            Context.MethodConfig.NewCode newCode = new Context.MethodConfig.NewCode(0,
-                    methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcIf,
-                            String.format("The condition: %s is true!", jcIf.getCondition()),
-                            null, getTreeMaker(), getNames()));
             if (jcIf.getThenStatement() != null) {
                 getFactory().get(jcIf.getThenStatement().getKind()).process(jcIf.getThenStatement());
                 if (jcIf.getThenStatement() instanceof JCTree.JCBlock) {
                     JCTree.JCBlock then = (JCTree.JCBlock) jcIf.getThenStatement();
-                    then.stats = attachCode(then.stats, newCode);
+                    then.accept(new JCTree.Visitor() {
+                        @Override
+                        public void visitBlock(JCTree.JCBlock that) {
+                            that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0,
+                                    methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcIf,
+                                            String.format("The condition: %s is true!", jcIf.getCondition()),
+                                            null, getTreeMaker(), getNames())));
+                        }
+                    });
                 }
             }
             if (jcIf.getElseStatement() != null) {
                 process(jcIf.getElseStatement());
             }
         } else {
-            Context.MethodConfig.NewCode newCode = new Context.MethodConfig.NewCode(0,
-                    methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcTree,
-                            "The condition: else is true!",
-                            null, getTreeMaker(), getNames()));
             getFactory().get(jcTree.getKind()).process(jcTree);
             JCTree.JCBlock elsePart = (JCTree.JCBlock) jcTree;
-            elsePart.stats = attachCode(elsePart.stats, newCode);
+            elsePart.accept(new JCTree.Visitor() {
+                @Override
+                public void visitBlock(JCTree.JCBlock that) {
+                    that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0,
+                            methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcTree,
+                                    "The condition: else is true!",
+                                    null, getTreeMaker(), getNames())));
+                }
+            });
         }
     }
-
-
 }
