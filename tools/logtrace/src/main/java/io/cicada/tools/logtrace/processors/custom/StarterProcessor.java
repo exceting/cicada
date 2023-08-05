@@ -90,13 +90,16 @@ public class StarterProcessor extends TreeProcessor {
 
                     JCTree.JCIdent atomicBooleanIdent = getTreeMaker().Ident(getNames().fromString("AtomicBoolean"));
 
-                    // Add code: static final AtomicBoolean is_open = null;
+                    // Generate code: static final AtomicBoolean is_open = null;
                     classDecl.defs = classDecl.defs.append(getTreeMaker().VarDef(
                             getTreeMaker().Modifiers(Flags.STATIC, com.sun.tools.javac.util.List.nil()),
-                            getNames().fromString(isOpenIdentName), atomicBooleanIdent, getTreeMaker().Literal(TypeTag.BOT, null)));
+                            getNames().fromString(isOpenIdentName), atomicBooleanIdent,
+                            getTreeMaker().Literal(TypeTag.BOT, null)));
 
-                    // Add static block to init is_open.
+                    // Generate static block to init is_open.
                     classDecl.defs = classDecl.defs.append(getInitIsOpenStatement(assign.rhs.toString(), isOpenIdentName));
+
+                    System.out.println("=======" + classDecl);
                 }
             }
         }

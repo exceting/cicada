@@ -41,7 +41,7 @@ public class ImportProcessor extends TreeProcessor {
 
             ListBuffer<JCTree> newDefs = new ListBuffer<>();
 
-            // Add package and original import
+            // Generate package and original import
             unitTree.defs.stream().filter(d -> d.hasTag(PACKAGEDEF) || d.hasTag(IMPORT))
                     .collect(Collectors.toList())
                     .forEach(newDefs::append);
@@ -53,7 +53,7 @@ public class ImportProcessor extends TreeProcessor {
                 newDefs.append(jcTree);
             }
 
-            // Add original methods and fields
+            // Generate original methods and fields
             unitTree.defs.stream().filter(d -> !d.hasTag(PACKAGEDEF) && !d.hasTag(IMPORT))
                     .collect(Collectors.toList())
                     .forEach(newDefs::append);

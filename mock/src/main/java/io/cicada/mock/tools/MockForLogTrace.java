@@ -8,16 +8,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
-import java.beans.JavaBean;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @TestAnno
-@JavaBean
-@SuppressWarnings({})
-// @Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
+//@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class MockForLogTrace {
 
     private static final String v = "xxxfxx";
@@ -39,7 +35,7 @@ public class MockForLogTrace {
 
 
 
-    @LogTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)
+    @LogTrace(banLoop = true, traceLevel = Level.DEBUG)
     private void testIf(Integer id,
                         List<Integer> names,
                         int[] as,

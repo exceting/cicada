@@ -4,6 +4,7 @@ import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.tree.TreeTranslator;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
@@ -52,7 +53,7 @@ public class IfProcessor extends TreeProcessor {
                 }
             }
             if (jcIf.getElseStatement() != null) {
-                getFactory().get(jcIf.getElseStatement().getKind()).process(jcIf.getElseStatement());
+                process(jcIf.getElseStatement());
             }
         } else {
             Context.MethodConfig.NewCode newCode = new Context.MethodConfig.NewCode(0,
@@ -64,4 +65,6 @@ public class IfProcessor extends TreeProcessor {
             elsePart.stats = attachCode(elsePart.stats, newCode);
         }
     }
+
+
 }

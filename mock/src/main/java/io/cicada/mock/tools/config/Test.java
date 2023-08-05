@@ -5,6 +5,8 @@ import com.google.common.collect.Lists;
 import io.cicada.mock.tools.Demo;
 import io.cicada.tools.logtrace.annos.LogTrace;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
 
 import java.util.List;
@@ -14,14 +16,16 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Slf4jCheck
+//@Slf4jCheck
 public class Test {
 
     public static final AtomicBoolean isOpen = new AtomicBoolean(true);
 
     static int VV = 5;
 
-    @LogTrace(traceLevel = Level.DEBUG, banLoop = true)
+    private static final Logger logger = LoggerFactory.getLogger(Test.class);
+
+    @LogTrace(exceptionLog = true, traceLevel = Level.DEBUG, banLoop = true)
     public static void main(String[] args) {
         try {
             System.out.println("xxx");

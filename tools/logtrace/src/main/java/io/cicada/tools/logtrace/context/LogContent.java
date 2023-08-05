@@ -83,7 +83,6 @@ public class LogContent {
                     com.sun.tools.javac.util.List.from(currentParams)));
         }
         result.addFirst(treeMaker.Literal(sb.toString()));
-        System.out.println("---------  " + result);
         return result;
     }
 

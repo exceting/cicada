@@ -42,7 +42,7 @@ public class MethodProcessor extends TreeProcessor {
 
             methodBody.stats = attachCode(methodBody.stats, startNewCode);
 
-            // Add try-catch statement.
+            // Generate try-catch statement.
             if (methodConfig.isExceptionLog()) {
                 Name e = getNames().fromString("e");
                 JCTree.JCIdent eIdent = getTreeMaker().Ident(e);

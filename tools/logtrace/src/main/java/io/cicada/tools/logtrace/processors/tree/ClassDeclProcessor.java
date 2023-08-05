@@ -11,14 +11,14 @@ import io.cicada.tools.logtrace.processors.TreeProcessor;
  * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#CLASS}.
  * Only for anonymous inner class!!
  * eg:
- * {@code
- * new Consumer<String>() {
- *
- * @Override public void accept(String str) {
- * //...
- * }
- * };
- * }
+ * <pre>
+ *     modifiers class simpleName typeParameters
+ *         extends extendsClause
+ *         implements implementsClause
+ *     {
+ *         members
+ *     }
+ * </pre>
  */
 public class ClassDeclProcessor extends TreeProcessor {
 
