@@ -2,9 +2,8 @@ package io.cicada.mock.tools;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import io.cicada.tools.logtrace.annos.Ban;
-import io.cicada.tools.logtrace.annos.LogTrace;
-import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import io.cicada.tools.logtrace.annos.HideParam;
+import io.cicada.tools.logtrace.annos.MethodTrace;
 import org.slf4j.event.Level;
 
 import java.util.List;
@@ -30,12 +29,12 @@ public class Demo {
         }
     }
 
-    @LogTrace(traceLevel = Level.DEBUG)
-    public void demoMethod(@Ban int id,
-                           @Ban String name,
+    @MethodTrace(traceLevel = Level.DEBUG)
+    public void demoMethod(@HideParam int id,
+                           @HideParam String name,
                            List<String> books,
-                           @Ban String[] infos,
-                           @Ban Object obj,
+                           @HideParam String[] infos,
+                           @HideParam Object obj,
                            Kind kind) {
 
         if (id <= 0 || Strings.isNullOrEmpty(name)) {

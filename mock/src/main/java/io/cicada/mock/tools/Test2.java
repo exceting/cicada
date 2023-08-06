@@ -4,27 +4,53 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.cicada.mock.tools.config.Test;
-import io.cicada.tools.logtrace.annos.Ban;
-import io.cicada.tools.logtrace.annos.LogTrace;
+import io.cicada.tools.logtrace.annos.HideParam;
+import io.cicada.tools.logtrace.annos.MethodTrace;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import org.slf4j.event.Level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
+@Slf4jCheck
 public class Test2 {
 
     static final int VV = 5;
 
     public static void main(String[] args) {
         Test2 t2 = new Test2();
-        t2.t(null, "");
+        t2.t(null, "ssssssssssss");
     }
 
-    @LogTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)
-    public void t(Object o, @Ban String s) {
+    @MethodTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)
+    public void t(@HideParam Object o, String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
+
+        List<Consumer<String>> cs = Lists.newArrayList(new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                if (!Strings.isNullOrEmpty(s)) {
+                    System.out.println(s);
+                }
+            }
+        }, s1 -> {
+            if (!Strings.isNullOrEmpty(s1)) {
+                System.out.println(s1);
+            }
+        });
+
+        Object[] cs2 = new Object[]{
+                new Consumer() {
+                    @Override
+                    public void accept(Object s) {
+                        if (s!=null) {
+                            System.out.println(s);
+                        }
+                    }
+                }
+        };
+
         List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));
         for (Integer i : is) {
             if (i == 2) {

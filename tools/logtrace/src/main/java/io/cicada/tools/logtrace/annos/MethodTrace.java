@@ -5,12 +5,13 @@ import org.slf4j.event.Level;
 import java.lang.annotation.*;
 
 /**
- * Automatically append trace logs to the decorated methods.
+ * Methods with this annotation will have trace logs added to their internal conditional statements,
+ * and optionally, try-catch statements can also be appended as needed.
  */
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
-public @interface LogTrace {
+public @interface MethodTrace {
 
     /**
      * If true, catch and print exception.
