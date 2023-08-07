@@ -26,6 +26,7 @@ public class FieldAccessProcessor extends TreeProcessor {
         }
         JCTree.JCFieldAccess fieldAccess = (JCTree.JCFieldAccess) jcTree;
         JCTree.JCExpression selected = fieldAccess.getExpression();
+        System.out.println("~~~~~~~~  "+selected+ "     "+selected.getKind()+"    "+fieldAccess);
         if (selected != null) {
             getFactory().get(selected.getKind()).process(selected);
         }

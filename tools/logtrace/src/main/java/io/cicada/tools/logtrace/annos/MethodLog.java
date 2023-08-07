@@ -20,11 +20,14 @@ public @interface MethodLog {
     boolean exceptionLog() default false;
 
     /**
-     * If true, the block of loop will be traced.
-     * Since I cannot determine the size of your loop, I'm unable to assess the potential risks posed by the loop.
-     * You can enable it through this configuration
+     * If true, the duration to execute this method will be printed.
      */
-    boolean banLoop() default false;
+    boolean dur() default false;
+
+    /**
+     * If true, the if,switch statement's logs will not print, only print variables decorated with {@link VarLog}.
+     */
+    boolean onlyVar() default false;
 
     /**
      * Level of trace log.
@@ -36,9 +39,4 @@ public @interface MethodLog {
      * and the specific contents will not be printed.
      */
     boolean arrayToSize() default false;
-
-    /**
-     * If true, the duration to execute this method will be printed.
-     */
-    boolean dur() default false;
 }

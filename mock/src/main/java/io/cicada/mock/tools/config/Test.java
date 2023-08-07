@@ -24,7 +24,7 @@ public class Test {
 
     private static final Logger logger = LoggerFactory.getLogger(Test.class);
 
-    @MethodLog(exceptionLog = true, traceLevel = Level.DEBUG, banLoop = true)
+    @MethodLog(exceptionLog = true)
     public static void main(String[] args) {
         try {
             System.out.println("xxx");

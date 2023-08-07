@@ -39,25 +39,19 @@ public class Context {
     public static class MethodConfig {
         private final LogContent logContent;
         private final boolean exceptionLog;
-        private final boolean banLoop;
         private final boolean arrayToSize;
 
         private final Stack<OriginCode> blockStack = new Stack<>(); // Method stack.
 
         public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, boolean exceptionLog,
-                            boolean banLoop, String traceLevel, boolean arrayToSize) {
+                            String traceLevel, boolean arrayToSize) {
             this.logContent = new LogContent(methodName, traceLevel, argMap);
             this.exceptionLog = exceptionLog;
-            this.banLoop = banLoop;
             this.arrayToSize = arrayToSize;
         }
 
         public boolean isExceptionLog() {
             return exceptionLog;
-        }
-
-        public boolean isBanLoop() {
-            return banLoop;
         }
 
         public Stack<OriginCode> getBlockStack() {

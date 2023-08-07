@@ -27,7 +27,11 @@ public class StarterProcessor extends TreeProcessor {
 
     static final String LOMBOK_PACK = "lombok.extern.slf4j.Slf4j";
 
+    static final String LOMBOK_PACK_ROOT = "lombok.extern.slf4j.*";
+
     static final String SLF4J_PACK = Logger.class.getName();
+
+    static final String SLF4J_PACK_ROOT = "org.slf4j.*";
 
     public StarterProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
@@ -43,10 +47,10 @@ public class StarterProcessor extends TreeProcessor {
         final List<JCTree.JCImport> imports = unitTree.getImports();
         final JCTree.JCClassDecl classDecl = (JCTree.JCClassDecl) getJavacTrees().getTree(e);
         getTreeMaker().pos = classDecl.pos; // Reset pos.
-        final List<JCTree.JCAnnotation> annos = classDecl.mods.annotations; // All annotations of this Class
+        final List<JCTree.JCAnnotation> annos = classDecl.getModifiers().getAnnotations(); // All annotations of this Class
 
         final List<String> importClasses = imports.stream()
-                .map(imp -> imp.qualid.type.toString())
+                .map(imp -> imp.getQualifiedIdentifier().toString())
                 .collect(Collectors.toList());
 
         final Map<String, JCTree.JCAnnotation> annoMap = annos.stream()
@@ -104,9 +108,11 @@ public class StarterProcessor extends TreeProcessor {
         }
 
         String logIdentName;
-        if (importClasses.contains(LOMBOK_PACK) && annoMap.containsKey(LOMBOK_PACK)) { // Support lombok.
+        if ((importClasses.contains(LOMBOK_PACK) || importClasses.contains(LOMBOK_PACK_ROOT))
+                && annoMap.containsKey(LOMBOK_PACK)) { // Support lombok.
             logIdentName = "log";
-        } else if (importClasses.contains(SLF4J_PACK) && slf4jObjs.size() > 0) { // Local log obj.
+        } else if ((importClasses.contains(SLF4J_PACK) || importClasses.contains(SLF4J_PACK_ROOT))
+                && slf4jObjs.size() > 0) { // Local log obj.
             logIdentName = slf4jObjs.get(0); // Default to use the 1st one.
         } else { // Else, new slf4j logger object.
             logIdentName = "trace_logger";

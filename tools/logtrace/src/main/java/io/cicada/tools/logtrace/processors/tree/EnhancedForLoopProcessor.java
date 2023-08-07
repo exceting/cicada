@@ -23,10 +23,6 @@ public class EnhancedForLoopProcessor extends TreeProcessor {
 
     @Override
     public void process(JCTree jcTree) {
-        if (Context.currentMethodConfig.get().isBanLoop()) {
-            return;
-        }
-
         if (!(jcTree instanceof JCTree.JCEnhancedForLoop)) {
             return;
         }

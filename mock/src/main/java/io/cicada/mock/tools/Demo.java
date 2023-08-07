@@ -4,13 +4,14 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.annos.MethodLog;
-import org.slf4j.event.Level;
+import io.cicada.tools.logtrace.annos.Slf4jCheck;
 
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-
+@Slf4jCheck
 public class Demo {
 
     //@LogTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)
@@ -19,7 +20,7 @@ public class Demo {
 
     public static void main(String[] args) {
         Demo demo = new Demo();
-        demo.demoMethod(11, "hehehe", null, new String[]{"xxx"}, null, Kind.ROOT);
+        demo.demoMethod(11, "hehehe", Lists.newArrayList("yyyyy", "uuuuuu"), new String[]{"xxx"}, null, Kind.ROOT);
     }
 
     public static void t(BiFunction<String, String, String> bf) {
@@ -29,7 +30,7 @@ public class Demo {
         }
     }
 
-    @MethodLog(traceLevel = Level.DEBUG)
+    @MethodLog
     public void demoMethod(@Ban int id,
                            @Ban String name,
                            List<String> books,
@@ -41,11 +42,17 @@ public class Demo {
             throw new IllegalArgumentException("参数不合法！");
         }
         books.stream().filter(b -> {
+            if (b == null) {
+                System.out.println(books == null ? null:books);
+                return false;
+            }
             return true;
-        }).collect(Collectors.toList()).forEach(b -> {
-
+        }).collect(Collectors.toList()).stream().forEach(b -> {
+            if(b == null){
+                System.out.println("xxxx");
+            }
         });
-        books = books == null ? getDefaultBooks() : books;
+        //books = books == null ? getDefaultBooks() : books;
 
         String[] defaultInfos = getDefaultInfos();
         //infos = defaultInfos;
