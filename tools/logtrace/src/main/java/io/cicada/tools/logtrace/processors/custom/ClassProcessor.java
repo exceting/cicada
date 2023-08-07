@@ -4,7 +4,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.cicada.tools.logtrace.annos.MethodTrace;
+import io.cicada.tools.logtrace.annos.MethodLog;
 import io.cicada.tools.logtrace.context.Context;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.cicada.tools.logtrace.processors.TreeProcessor;
@@ -13,7 +13,7 @@ import java.util.Objects;
 
 public class ClassProcessor extends TreeProcessor {
 
-    static final String LOG_TRACE = MethodTrace.class.getName();
+    static final String LOG_TRACE = MethodLog.class.getName();
 
     static final String LOG_TRACE_EXCEPTION_LOG = "exceptionLog";
     static final String LOG_TRACE_BAN_LOOP = "banLoop";

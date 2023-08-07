@@ -3,7 +3,7 @@ package io.cicada.mock.tools.config;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.cicada.mock.tools.Demo;
-import io.cicada.tools.logtrace.annos.MethodTrace;
+import io.cicada.tools.logtrace.annos.MethodLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -24,7 +24,7 @@ public class Test {
 
     private static final Logger logger = LoggerFactory.getLogger(Test.class);
 
-    @MethodTrace(exceptionLog = true, traceLevel = Level.DEBUG, banLoop = true)
+    @MethodLog(exceptionLog = true, traceLevel = Level.DEBUG, banLoop = true)
     public static void main(String[] args) {
         try {
             System.out.println("xxx");

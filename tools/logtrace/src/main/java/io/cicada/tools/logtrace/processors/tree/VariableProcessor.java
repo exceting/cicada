@@ -5,12 +5,15 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
+import io.cicada.tools.logtrace.annos.VarLog;
 import io.cicada.tools.logtrace.context.Context;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.cicada.tools.logtrace.processors.TreeProcessor;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * A recursive processor for {@link JCTree} of kind {@link com.sun.source.tree.Tree.Kind#VARIABLE}.
@@ -21,6 +24,8 @@ import java.util.Map;
  * </pre>
  */
 public class VariableProcessor extends TreeProcessor {
+
+    static final String VAR_LOG = VarLog.class.getSimpleName();
 
     public VariableProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
@@ -45,8 +50,19 @@ public class VariableProcessor extends TreeProcessor {
             getFactory().get(jcVariableDecl.init.getKind()).process(jcVariableDecl.init);
         }
 
-        if (jcVariableDecl.init instanceof JCTree.JCConditional
-                || jcVariableDecl.init instanceof JCTree.JCMethodInvocation) {
+        if (jcVariableDecl.getModifiers().getAnnotations() != null && jcVariableDecl.getModifiers().getAnnotations().size() > 0) {
+            boolean needProcess = false;
+            List<JCTree.JCAnnotation> hit = jcVariableDecl.getModifiers().getAnnotations()
+                    .stream()
+                    .filter(a -> {
+                        // FIXME The fully qualified name of the VarLog annotation should be used for comparison here,
+                        //  but it is not possible to retrieve its fully qualified name at this point.
+                        return VAR_LOG.equals(a.getAnnotationType().toString());
+                    })
+                    .collect(Collectors.toList());
+            if (hit.size() == 0) {
+                return;
+            }
             // Get current block.
             Context.MethodConfig.OriginCode originCode = Context.currentMethodConfig.get().getBlockStack().peek();
             if (originCode != null) {

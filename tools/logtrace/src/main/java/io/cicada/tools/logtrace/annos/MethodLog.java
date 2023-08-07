@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.METHOD})
-public @interface MethodTrace {
+public @interface MethodLog {
 
     /**
      * If true, catch and print exception.
@@ -21,20 +21,24 @@ public @interface MethodTrace {
 
     /**
      * If true, the block of loop will be traced.
-     * Since I cannot determine the size of your loop, I am unable to assess the potential risks posed by the loop.
+     * Since I cannot determine the size of your loop, I'm unable to assess the potential risks posed by the loop.
      * You can enable it through this configuration
      */
     boolean banLoop() default false;
 
     /**
      * Level of trace log.
-     * Default: TRACE
      */
-    Level traceLevel() default Level.TRACE;
+    Level traceLevel() default Level.DEBUG;
 
     /**
      * If true, the collection/array parameters in your method will only print their size,
      * and the specific contents will not be printed.
      */
     boolean arrayToSize() default false;
+
+    /**
+     * If true, the duration to execute this method will be printed.
+     */
+    boolean dur() default false;
 }

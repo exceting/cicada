@@ -36,10 +36,6 @@ public class IfProcessor extends TreeProcessor {
         Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
         if (jcTree instanceof JCTree.JCIf) {
             JCTree.JCIf jcIf = (JCTree.JCIf) jcTree;
-            if (jcIf.getCondition() != null) {
-                getFactory().get(jcIf.getCondition().getKind()).process(jcIf.getCondition());
-            }
-
             if (jcIf.getThenStatement() != null) {
                 getFactory().get(jcIf.getThenStatement().getKind()).process(jcIf.getThenStatement());
                 if (jcIf.getThenStatement() instanceof JCTree.JCBlock) {
@@ -57,6 +53,9 @@ public class IfProcessor extends TreeProcessor {
             }
             if (jcIf.getElseStatement() != null) {
                 process(jcIf.getElseStatement());
+            }
+            if (jcIf.getCondition() != null) {
+                getFactory().get(jcIf.getCondition().getKind()).process(jcIf.getCondition());
             }
         } else {
             getFactory().get(jcTree.getKind()).process(jcTree);

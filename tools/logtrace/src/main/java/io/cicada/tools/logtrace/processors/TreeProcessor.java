@@ -6,7 +6,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
-import io.cicada.tools.logtrace.annos.HideParam;
+import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.context.Context;
 
 import java.util.Collection;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 public abstract class TreeProcessor {
 
-    static final String PARAM_BAN = HideParam.class.getName();
+    static final String PARAM_BAN = Ban.class.getName();
     ProcessorFactory factory;
     JavacTrees javacTrees;
     TreeMaker treeMaker;

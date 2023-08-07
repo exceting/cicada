@@ -33,6 +33,7 @@ public class MethodInvocationProcessor extends TreeProcessor {
         }
 
         if (methodInvocation.getMethodSelect() != null) {
+            System.out.println("========   "+methodInvocation.getMethodSelect()+"     "+methodInvocation.getMethodSelect());
             getFactory().get(methodInvocation.getMethodSelect().getKind()).process(methodInvocation.getMethodSelect());
         }
     }

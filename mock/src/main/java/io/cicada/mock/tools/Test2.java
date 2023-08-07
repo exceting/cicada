@@ -4,9 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.cicada.mock.tools.config.Test;
-import io.cicada.tools.logtrace.annos.HideParam;
-import io.cicada.tools.logtrace.annos.MethodTrace;
-import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import io.cicada.tools.logtrace.annos.*;
 import org.slf4j.event.Level;
 
 import java.util.ArrayList;
@@ -23,8 +21,8 @@ public class Test2 {
         t2.t(null, "ssssssssssss");
     }
 
-    @MethodTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)
-    public void t(@HideParam Object o, String s) {
+    @MethodLog(exceptionLog = true, banLoop = true, traceLevel = Level.INFO)
+    public void t(@Ban Object o, String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
 
         List<Consumer<String>> cs = Lists.newArrayList(new Consumer<String>() {
@@ -40,6 +38,7 @@ public class Test2 {
             }
         });
 
+        @VarLog
         Object[] cs2 = new Object[]{
                 new Consumer() {
                     @Override
@@ -102,7 +101,7 @@ public class Test2 {
             t--;
         } while (t > 0);
 
-        stringList.forEach(i -> {
+        stringList.stream().forEach(i -> {
             if (Strings.isNullOrEmpty(i)) {
             } else {
                 System.out.println(i);
