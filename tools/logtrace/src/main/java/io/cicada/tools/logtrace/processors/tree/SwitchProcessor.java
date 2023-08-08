@@ -39,6 +39,9 @@ public class SwitchProcessor extends TreeProcessor {
                 jcCase.accept(new JCTree.Visitor() {
                     @Override
                     public void visitCase(JCTree.JCCase that) {
+                        if (methodConfig.isOnlyVar()) {
+                            return;
+                        }
                         that.stats = generateCode(jcCase.stats, new Context.MethodConfig.NewCode(0,
                                 methodConfig.getLogContent()
                                         .getNewCodeStatement(Tree.Kind.SWITCH, jcCase,

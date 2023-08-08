@@ -2,7 +2,7 @@ package io.cicada.tools.logtrace.context;
 
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Position;
-import io.cicada.tools.logtrace.processors.custom.StarterProcessor;
+import io.cicada.tools.logtrace.processors.custom.MethodProcessor;
 import io.cicada.tools.logtrace.processors.custom.ClassProcessor;
 
 import javax.lang.model.element.Element;
@@ -12,25 +12,25 @@ public class Context {
 
     /**
      * The code line map.
-     * Refresh in {@link StarterProcessor#process()}
+     * Refresh in {@link ClassProcessor#process()}
      */
     public static final ThreadLocal<Position.LineMap> lineMap = new ThreadLocal<>();
 
     /**
      * The log obj ident.
-     * Refresh in {@link StarterProcessor#process()}
+     * Refresh in {@link ClassProcessor#process()}
      */
     public static final ThreadLocal<String> currentLogIdentName = new ThreadLocal<>();
 
     /**
      * Master switch obj ident.
-     * Refresh in {@link StarterProcessor#process()}
+     * Refresh in {@link ClassProcessor#process()}
      */
     public static final ThreadLocal<String> currentIsOpenIdentName = new ThreadLocal<>();
 
     /**
      * The method annotation config.
-     * Refresh in {@link ClassProcessor#process(JCTree)}
+     * Refresh in {@link MethodProcessor#process(JCTree)}
      */
     public static final ThreadLocal<MethodConfig> currentMethodConfig = new ThreadLocal<>();
 
@@ -38,20 +38,14 @@ public class Context {
 
     public static class MethodConfig {
         private final LogContent logContent;
-        private final boolean exceptionLog;
-        private final boolean arrayToSize;
+
+        private final boolean onlyVar;
 
         private final Stack<OriginCode> blockStack = new Stack<>(); // Method stack.
 
-        public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, boolean exceptionLog,
-                            String traceLevel, boolean arrayToSize) {
+        public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, String traceLevel, boolean onlyVar) {
             this.logContent = new LogContent(methodName, traceLevel, argMap);
-            this.exceptionLog = exceptionLog;
-            this.arrayToSize = arrayToSize;
-        }
-
-        public boolean isExceptionLog() {
-            return exceptionLog;
+            this.onlyVar = onlyVar;
         }
 
         public Stack<OriginCode> getBlockStack() {
@@ -62,8 +56,8 @@ public class Context {
             return logContent;
         }
 
-        public boolean isArrayToSize() {
-            return arrayToSize;
+        public boolean isOnlyVar() {
+            return onlyVar;
         }
 
         public static class OriginCode {

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-//@Slf4jCheck
+@Slf4jCheck
 public class Test2 {
 
     static final int VV = 5;
@@ -21,7 +21,7 @@ public class Test2 {
         t2.t(null, "ssssssssssss");
     }
 
-    @MethodLog(exceptionLog = true, traceLevel = Level.INFO)
+    @MethodLog(exceptionLog = true, dur = true, traceLevel = Level.INFO)
     public void t(@Ban Object o, String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
 

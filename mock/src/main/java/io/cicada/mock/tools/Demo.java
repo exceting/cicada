@@ -5,10 +5,11 @@ import com.google.common.collect.Lists;
 import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.annos.MethodLog;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import io.cicada.tools.logtrace.annos.VarLog;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4jCheck
@@ -20,7 +21,19 @@ public class Demo {
 
     public static void main(String[] args) {
         Demo demo = new Demo();
-        demo.demoMethod(11, "hehehe", Lists.newArrayList("yyyyy", "uuuuuu"), new String[]{"xxx"}, null, Kind.ROOT);
+        demo.demoMethod(11, "hehehe",
+                Lists.newArrayList("yyyyy", "uuuuuu"),
+                new String[]{"xxx"},
+                Lists.newArrayList(new Object[]{new Object()}, new Object[]{new Object()}),
+                null,
+                null, Kind.ROOT);
+
+        String paramType = "Map<Map<String, Object>, String>";
+        if (paramType.contains("<")) {
+            long start = System.nanoTime();
+            paramType = paramType.substring(0, paramType.indexOf("<"));
+        }
+        System.out.println(paramType);
     }
 
     public static void t(BiFunction<String, String, String> bf) {
@@ -30,30 +43,34 @@ public class Demo {
         }
     }
 
-    @MethodLog
+    @MethodLog(dur = true, onlyVar = true)
     public void demoMethod(@Ban int id,
                            @Ban String name,
                            List<String> books,
-                           @Ban String[] infos,
-                           @Ban Object obj,
+                           String[] infos,
+                           List<Object[]> listArray,
+                           @Ban List<List<Map<String, String>>> llm,
+                           Object obj,
                            Kind kind) {
+
+        final List<String> final_books = books;
 
         if (id <= 0 || Strings.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("参数不合法！");
         }
         books.stream().filter(b -> {
             if (b == null) {
-                System.out.println(books == null ? null:books);
                 return false;
             }
             return true;
         }).collect(Collectors.toList()).stream().forEach(b -> {
-            if(b == null){
+            if (b == null) {
                 System.out.println("xxxx");
             }
         });
-        //books = books == null ? getDefaultBooks() : books;
+        books = books == null ? getDefaultBooks() : books;
 
+        @VarLog
         String[] defaultInfos = getDefaultInfos();
         //infos = defaultInfos;
 

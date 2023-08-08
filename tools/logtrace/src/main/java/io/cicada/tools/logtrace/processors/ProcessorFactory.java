@@ -23,7 +23,6 @@ public class ProcessorFactory {
         baseProcessorMap = new HashMap<>();
         processorMap = new HashMap<>();
 
-        baseProcessorMap.put(Kind.STARTER, new StarterProcessor(this, javacTrees, treeMaker, names));
         baseProcessorMap.put(Kind.IMPORT, new ImportProcessor(this, javacTrees, treeMaker, names));
         baseProcessorMap.put(Kind.CLASS, new ClassProcessor(this, javacTrees, treeMaker, names));
         baseProcessorMap.put(Kind.METHOD, new MethodProcessor(this, javacTrees, treeMaker, names));
@@ -64,7 +63,6 @@ public class ProcessorFactory {
     }
 
     public enum Kind {
-        STARTER(),
         IMPORT(),
         CLASS(),
         METHOD()

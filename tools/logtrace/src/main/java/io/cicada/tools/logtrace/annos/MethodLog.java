@@ -33,10 +33,4 @@ public @interface MethodLog {
      * Level of trace log.
      */
     Level traceLevel() default Level.DEBUG;
-
-    /**
-     * If true, the collection/array parameters in your method will only print their size,
-     * and the specific contents will not be printed.
-     */
-    boolean arrayToSize() default false;
 }

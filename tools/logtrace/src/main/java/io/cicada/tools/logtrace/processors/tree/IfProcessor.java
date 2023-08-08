@@ -43,6 +43,9 @@ public class IfProcessor extends TreeProcessor {
                     then.accept(new JCTree.Visitor() {
                         @Override
                         public void visitBlock(JCTree.JCBlock that) {
+                            if (methodConfig.isOnlyVar()) {
+                                return;
+                            }
                             that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0,
                                     methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcIf,
                                             String.format("The condition: %s is true!", jcIf.getCondition()),
@@ -63,6 +66,9 @@ public class IfProcessor extends TreeProcessor {
             elsePart.accept(new JCTree.Visitor() {
                 @Override
                 public void visitBlock(JCTree.JCBlock that) {
+                    if (methodConfig.isOnlyVar()) {
+                        return;
+                    }
                     that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0,
                             methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcTree,
                                     "The condition: else is true!",
