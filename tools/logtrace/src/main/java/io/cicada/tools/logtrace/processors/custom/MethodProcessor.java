@@ -20,17 +20,17 @@ import java.util.stream.Collectors;
 
 public class MethodProcessor extends TreeProcessor {
 
-    static final String LOG_TRACE = MethodLog.class.getName();
+    static final String METHOD_LOG = MethodLog.class.getName();
 
-    static final String PARAM_BAN = Ban.class.getName();
+    static final String BAN = Ban.class.getName();
 
-    static final String LOG_TRACE_EXCEPTION_LOG = "exceptionLog";
+    static final String METHOD_LOG_EXCEPTION = "exceptionLog";
 
-    static final String LOG_TRACE_DUR = "dur";
+    static final String METHOD_LOG_DUR = "dur";
 
-    static final String LOG_TRACE_ONLY_VAR = "onlyVar";
+    static final String METHOD_LOG_ONLY_VAR = "onlyVar";
 
-    static final String LOG_TRACE_LEVEL = "traceLevel";
+    static final String METHOD_LOG_LEVEL = "traceLevel";
 
     public MethodProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
@@ -51,7 +51,7 @@ public class MethodProcessor extends TreeProcessor {
 
         JCTree.JCAnnotation traceAnno = null;
         for (JCTree.JCAnnotation anno : methodDecl.getModifiers().annotations) {
-            if (LOG_TRACE.equals(anno.getAnnotationType().type.toString())) {
+            if (METHOD_LOG.equals(anno.getAnnotationType().type.toString())) {
                 traceAnno = anno;
                 break;
             }
@@ -70,16 +70,16 @@ public class MethodProcessor extends TreeProcessor {
                     continue;
                 }
                 JCTree.JCAssign assign = (JCTree.JCAssign) arg;
-                if (LOG_TRACE_EXCEPTION_LOG.equals(assign.lhs.toString())) {
+                if (METHOD_LOG_EXCEPTION.equals(assign.lhs.toString())) {
                     exceptionLog = "true".equals(assign.rhs.toString());
                 }
-                if (LOG_TRACE_DUR.equals(assign.lhs.toString())) {
+                if (METHOD_LOG_DUR.equals(assign.lhs.toString())) {
                     dur = "true".equals(assign.rhs.toString());
                 }
-                if (LOG_TRACE_ONLY_VAR.equals(assign.lhs.toString())) {
+                if (METHOD_LOG_ONLY_VAR.equals(assign.lhs.toString())) {
                     onlyVar = "true".equals(assign.rhs.toString());
                 }
-                if (LOG_TRACE_LEVEL.equals(assign.lhs.toString())) {
+                if (METHOD_LOG_LEVEL.equals(assign.lhs.toString())) {
                     level = assign.rhs.toString();
                 }
             }
@@ -100,7 +100,7 @@ public class MethodProcessor extends TreeProcessor {
                     return true;
                 }
                 java.util.List<JCTree.JCAnnotation> banAnnos = p.getModifiers().getAnnotations()
-                        .stream().filter(oaa -> PARAM_BAN.equals(oaa.type.toString())).collect(Collectors.toList());
+                        .stream().filter(oaa -> BAN.equals(oaa.type.toString())).collect(Collectors.toList());
                 return banAnnos.size() == 0;
             }).collect(Collectors.toList()));
 
@@ -172,12 +172,7 @@ public class MethodProcessor extends TreeProcessor {
             JCTree.JCBlock jcFinally = null;
             JCTree.JCVariableDecl jcStartTime = null;
             if (dur) {
-                String newParamName = "log_trace_start";
-                int num = 0;
-                while (allVarsInMethod.contains(newParamName)) { // Preventing naming conflicts.
-                    newParamName = String.format("log_trace_start_%d", num);
-                    num++;
-                }
+                Name newParamName = getNames().fromString(String.format("a%s", UUID.randomUUID()).replace("-", "_"));
 
                 // Code: System.nanoTime()
                 JCTree.JCMethodInvocation nanoTimeInvocation = getTreeMaker().Apply(null, getTreeMaker().Select(
@@ -186,7 +181,7 @@ public class MethodProcessor extends TreeProcessor {
 
                 // Code: final long log_trace_start = System.nanoTime()
                 jcStartTime = getTreeMaker().VarDef(getTreeMaker().Modifiers(Flags.FINAL, com.sun.tools.javac.util.List.nil()),
-                        getNames().fromString(newParamName),
+                        newParamName,
                         getTreeMaker().TypeIdent(TypeTag.LONG),
                         nanoTimeInvocation);
 
@@ -194,7 +189,7 @@ public class MethodProcessor extends TreeProcessor {
                 Map<String, JCTree.JCExpression> newParams = new LinkedHashMap<>();
                 newParams.put("duration", getTreeMaker().Binary(JCTree.Tag.DIV,
                         getTreeMaker().Parens(getTreeMaker().Binary(JCTree.Tag.MINUS,
-                                nanoTimeInvocation, getTreeMaker().Ident(getNames().fromString(newParamName)))),
+                                nanoTimeInvocation, getTreeMaker().Ident(newParamName))),
                         getTreeMaker().Literal(1000000L)));
 
                 // Code: finally { trace_logger.debug("xxxx Finished! duration = 25") }

@@ -28,7 +28,7 @@ public class Test2 {
         System.out.println(a5f719a72_3f91_4678_b4f5_76dba46900d0);
     }
 
-    @MethodLog(exceptionLog = true, dur = true, traceLevel = Level.INFO)
+    @MethodLog(exceptionLog = true, dur = true, onlyVar = true, traceLevel = Level.INFO)
     public void t(@Ban Object o, String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
 
@@ -51,13 +51,15 @@ public class Test2 {
                     @Override
                     public void accept(String s) {
                         if (s != null) {
-                            @VarLog
+                            @VarLog(dur = true)
                             int iiii = 566666666;
                             System.out.println(s);
                         }
                     }
                 }
         };
+
+        cs2[0].accept("xxee");
 
         int ia = ((Predicate<String>) input22 -> {
             if (Strings.isNullOrEmpty(input22)) {
