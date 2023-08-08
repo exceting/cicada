@@ -9,7 +9,9 @@ import org.slf4j.event.Level;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 @Slf4jCheck
 public class Test2 {
@@ -19,6 +21,11 @@ public class Test2 {
     public static void main(String[] args) {
         Test2 t2 = new Test2();
         t2.t(null, "ssssssssssss");
+
+        System.out.println(UUID.randomUUID().toString().replace("-", "_"));
+
+        int a5f719a72_3f91_4678_b4f5_76dba46900d0 = 1;
+        System.out.println(a5f719a72_3f91_4678_b4f5_76dba46900d0);
     }
 
     @MethodLog(exceptionLog = true, dur = true, traceLevel = Level.INFO)
@@ -39,16 +46,43 @@ public class Test2 {
         });
 
         @VarLog
-        Object[] cs2 = new Object[]{
-                new Consumer() {
+        Consumer<String>[] cs2 = new Consumer[]{
+                new Consumer<String>() {
                     @Override
-                    public void accept(Object s) {
-                        if (s!=null) {
+                    public void accept(String s) {
+                        if (s != null) {
+                            @VarLog
+                            int iiii = 566666666;
                             System.out.println(s);
                         }
                     }
                 }
         };
+
+        int ia = ((Predicate<String>) input22 -> {
+            if (Strings.isNullOrEmpty(input22)) {
+                System.out.println("null!");
+                return false;
+            }
+            return true;
+        }).apply("sr") ? new Supplier<Integer>() {
+            @Override
+            public Integer get() {
+                if (true) {
+                    @VarLog(dur = true)
+                    int fvfvfvfvf = 000;
+                }
+                return 11111;
+            }
+        }.get() : ((Supplier<Integer>) () -> {
+            if (true) {
+                @VarLog
+                int ghghghghg = 9999;
+            }
+            return 222222;
+        }).get();
+
+        cs2[0].accept("vvvv");
 
         List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));
         for (Integer i : is) {
