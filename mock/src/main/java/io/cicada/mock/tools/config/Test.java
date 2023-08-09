@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import io.cicada.mock.tools.Demo;
 import io.cicada.tools.logtrace.annos.MethodLog;
+import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.event.Level;
@@ -15,10 +16,12 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-//@Slf4jCheck
+@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class Test {
 
-    public static final AtomicBoolean isOpen = new AtomicBoolean(true);
+    public static final AtomicBoolean isOpen = new AtomicBoolean(false);
+
+    public static final AtomicBoolean isOpen2 = new AtomicBoolean(true);
 
     static int VV = 5;
 

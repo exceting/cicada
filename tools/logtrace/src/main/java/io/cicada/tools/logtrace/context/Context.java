@@ -22,11 +22,13 @@ public class Context {
      */
     public static final ThreadLocal<String> currentLogIdentName = new ThreadLocal<>();
 
+    public static final ThreadLocal<String> classIsOpenFieldName = new ThreadLocal<>();
+
     /**
      * Master switch obj ident.
      * Refresh in {@link ClassProcessor#process()}
      */
-    public static final ThreadLocal<String> currentIsOpenIdentName = new ThreadLocal<>();
+    public static final ThreadLocal<Map<String, String>> allIsOpenMap = new ThreadLocal<>();
 
     /**
      * The method annotation config.
@@ -36,6 +38,15 @@ public class Context {
 
     public static final ThreadLocal<Element> currentElement = new ThreadLocal<>();
 
+    public static void remove() {
+        lineMap.remove();
+        currentLogIdentName.remove();
+        classIsOpenFieldName.remove();
+        allIsOpenMap.remove();
+        currentMethodConfig.remove();
+        currentElement.remove();
+    }
+
     public static class MethodConfig {
         private final LogContent logContent;
 
@@ -43,8 +54,9 @@ public class Context {
 
         private final Stack<OriginCode> blockStack = new Stack<>(); // Method stack.
 
-        public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, String traceLevel, boolean onlyVar) {
-            this.logContent = new LogContent(methodName, traceLevel, argMap);
+        public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, String traceLevel,
+                            boolean onlyVar, String mIsOpen) {
+            this.logContent = new LogContent(methodName, traceLevel, mIsOpen, argMap);
             this.onlyVar = onlyVar;
         }
 

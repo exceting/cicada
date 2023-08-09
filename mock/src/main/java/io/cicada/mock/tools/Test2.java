@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Slf4jCheck
+@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class Test2 {
 
     static final int VV = 5;
@@ -22,15 +22,19 @@ public class Test2 {
         Test2 t2 = new Test2();
         t2.t(null, "ssssssssssss");
 
-        System.out.println(UUID.randomUUID().toString().replace("-", "_"));
+        System.out.println(String.format("%s%s", 'b', UUID.randomUUID()).replace("-", "_"));
 
         int a5f719a72_3f91_4678_b4f5_76dba46900d0 = 1;
         System.out.println(a5f719a72_3f91_4678_b4f5_76dba46900d0);
     }
 
-    @MethodLog(exceptionLog = true, dur = true, onlyVar = true, traceLevel = Level.INFO)
+    @MethodLog(exceptionLog = true, dur = true, onlyVar = true, traceLevel = Level.INFO, isOpen = "io.cicada.mock.tools.config.Test#isOpen2")
     public void t(@Ban Object o, String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
+
+        for(int i=0; i<5;i++){
+
+        }
 
         List<Consumer<String>> cs = Lists.newArrayList(new Consumer<String>() {
             @Override
@@ -161,6 +165,7 @@ public class Test2 {
         }
     }
 
+    @MethodLog(exceptionLog = true, dur = true)
     private boolean isHid() {
         return true;
     }

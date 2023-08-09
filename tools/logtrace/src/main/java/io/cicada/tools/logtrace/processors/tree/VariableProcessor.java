@@ -89,7 +89,7 @@ public class VariableProcessor extends TreeProcessor {
                 newArgs.put(jcVariableDecl.getName().toString(), getTreeMaker().Ident(jcVariableDecl.getName()));
                 if (dur) {
 
-                    Name newParamName = getNames().fromString(String.format("b%s", UUID.randomUUID()).replace("-", "_"));
+                    Name newParamName = getNames().fromString(getNewVarName("var_start_"));
 
                     // Code: System.nanoTime()
                     JCTree.JCMethodInvocation nanoTimeInvocation = getTreeMaker().Apply(null, getTreeMaker().Select(

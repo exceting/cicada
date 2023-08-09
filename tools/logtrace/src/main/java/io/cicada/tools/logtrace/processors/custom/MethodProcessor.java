@@ -32,6 +32,8 @@ public class MethodProcessor extends TreeProcessor {
 
     static final String METHOD_LOG_LEVEL = "traceLevel";
 
+    static final String METHOD_LOG_IS_OPEN = "isOpen";
+
     public MethodProcessor(ProcessorFactory factory, JavacTrees javacTrees, TreeMaker treeMaker, Names names) {
         super(factory, javacTrees, treeMaker, names);
     }
@@ -49,21 +51,16 @@ public class MethodProcessor extends TreeProcessor {
             return;
         }
 
-        JCTree.JCAnnotation traceAnno = null;
-        for (JCTree.JCAnnotation anno : methodDecl.getModifiers().annotations) {
-            if (METHOD_LOG.equals(anno.getAnnotationType().type.toString())) {
-                traceAnno = anno;
-                break;
-            }
-        }
-        if (traceAnno == null) {
-            return;
-        }
+        JCTree.JCAnnotation traceAnno = methodDecl.getModifiers().getAnnotations().stream()
+                .filter(a -> METHOD_LOG.equals(a.getAnnotationType().type.toString()))
+                .collect(Collectors.toList())
+                .get(0);
 
         boolean exceptionLog = false;
         boolean dur = false;
         boolean onlyVar = false;
         String level = "Level.DEBUG";
+        String isOpen = null;
         if (traceAnno.getArguments() != null && traceAnno.getArguments().size() > 0) {
             for (JCTree.JCExpression arg : traceAnno.getArguments()) {
                 if (!(arg instanceof JCTree.JCAssign)) {
@@ -81,6 +78,9 @@ public class MethodProcessor extends TreeProcessor {
                 }
                 if (METHOD_LOG_LEVEL.equals(assign.lhs.toString())) {
                     level = assign.rhs.toString();
+                }
+                if (METHOD_LOG_IS_OPEN.equals(assign.lhs.toString())) {
+                    isOpen = assign.rhs.toString();
                 }
             }
         }
@@ -136,8 +136,7 @@ public class MethodProcessor extends TreeProcessor {
 
         Context.MethodConfig methodConfig = new Context.MethodConfig(
                 methodDecl.getName().toString(),
-                finalParamsMap,
-                level, onlyVar);
+                finalParamsMap, level, onlyVar, isOpen);
         methodConfig.getBlockStack().push(new Context.MethodConfig.OriginCode(methodDecl.getBody()));
         Context.currentMethodConfig.set(methodConfig);
 
@@ -172,7 +171,7 @@ public class MethodProcessor extends TreeProcessor {
             JCTree.JCBlock jcFinally = null;
             JCTree.JCVariableDecl jcStartTime = null;
             if (dur) {
-                Name newParamName = getNames().fromString(String.format("a%s", UUID.randomUUID()).replace("-", "_"));
+                Name newParamName = getNames().fromString(getNewVarName("start_"));
 
                 // Code: System.nanoTime()
                 JCTree.JCMethodInvocation nanoTimeInvocation = getTreeMaker().Apply(null, getTreeMaker().Select(

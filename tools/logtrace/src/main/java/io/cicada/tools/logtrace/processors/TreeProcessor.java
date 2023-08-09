@@ -7,6 +7,8 @@ import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
 import io.cicada.tools.logtrace.context.Context;
 
+import java.util.UUID;
+
 public abstract class TreeProcessor {
     ProcessorFactory factory;
     JavacTrees javacTrees;
@@ -83,6 +85,29 @@ public abstract class TreeProcessor {
         }
 
         return result;
+    }
+
+    public String getAnnoAttrValue(JCTree.JCAnnotation anno, String attrName) {
+        if (anno.getArguments() == null || anno.getArguments().size() == 0) {
+            return null;
+        }
+        for (JCTree.JCExpression arg : anno.getArguments()) {
+            if (!(arg instanceof JCTree.JCAssign)) {
+                continue;
+            }
+            JCTree.JCAssign assign = (JCTree.JCAssign) arg;
+            if (attrName.equals(assign.lhs.toString())) {
+                return assign.rhs.toString();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Generate new variable names; Use UUID to avoid conflicts.
+     */
+    public String getNewVarName(String head) {
+        return String.format("%s%s", head, UUID.randomUUID()).replace("-", "_");
     }
 
     public ProcessorFactory getFactory() {

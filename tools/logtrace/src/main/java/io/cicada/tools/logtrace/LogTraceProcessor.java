@@ -50,9 +50,12 @@ public class LogTraceProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement t : annotations) {
             for (Element e : roundEnv.getElementsAnnotatedWith(t)) {
-                io.cicada.tools.logtrace.context.Context.currentElement.set(e);
-                factory.get(ProcessorFactory.Kind.CLASS).process();
-                io.cicada.tools.logtrace.context.Context.currentElement.remove();
+                try {
+                    io.cicada.tools.logtrace.context.Context.currentElement.set(e);
+                    factory.get(ProcessorFactory.Kind.CLASS).process();
+                } finally {
+                    io.cicada.tools.logtrace.context.Context.remove();
+                }
             }
         }
         return true;

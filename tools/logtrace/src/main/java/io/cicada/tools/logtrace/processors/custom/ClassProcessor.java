@@ -8,6 +8,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
+import io.cicada.tools.logtrace.annos.MethodLog;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import io.cicada.tools.logtrace.context.Context;
 import io.cicada.tools.logtrace.processors.ProcessorFactory;
@@ -21,6 +22,10 @@ import java.util.stream.Collectors;
 public class ClassProcessor extends TreeProcessor {
 
     static final String SLF4J_CHECK = Slf4jCheck.class.getName();
+
+    static final String METHOD_LOG = MethodLog.class.getName();
+
+    static final String SLF4J_IS_OPEN = "isOpen";
 
     static final String LOMBOK_PACK = "lombok.extern.slf4j.Slf4j";
 
@@ -36,7 +41,6 @@ public class ClassProcessor extends TreeProcessor {
 
     @Override
     public void process() {
-        Context.currentIsOpenIdentName.remove();
         Element e = Context.currentElement.get();
         JCTree jcTree = getJavacTrees().getTree(e);
         if (!(jcTree instanceof JCTree.JCClassDecl)) {
@@ -60,7 +64,7 @@ public class ClassProcessor extends TreeProcessor {
 
         final Set<String> allExistFieldNames = new HashSet<>();
 
-        List<String> slf4jObjs = classDecl.defs.stream()
+        List<String> slf4jObjs = classDecl.getMembers().stream()
                 .filter(def -> def instanceof JCTree.JCVariableDecl)
                 .map(def -> {
                     JCTree.JCVariableDecl variableDecl = (JCTree.JCVariableDecl) def;
@@ -70,44 +74,6 @@ public class ClassProcessor extends TreeProcessor {
                         && (def.getModifiers().flags >> 3 & 1) == 1) // Filter static slf4j obj.
                 .map(def -> def.getName().toString())
                 .collect(Collectors.toList());
-
-        JCTree.JCAnnotation slf4jCheck = annoMap.get(SLF4J_CHECK);
-        if (slf4jCheck.getArguments() != null && slf4jCheck.getArguments().size() > 0) {
-            for (JCTree.JCExpression arg : slf4jCheck.getArguments()) {
-                if (!(arg instanceof JCTree.JCAssign)) {
-                    continue;
-                }
-                JCTree.JCAssign assign = (JCTree.JCAssign) arg;
-                if ("isOpen".equals(assign.lhs.toString())) {
-                    getFactory().get(ProcessorFactory.Kind.IMPORT).process(getTreeMaker().Import(getTreeMaker().Select(
-                                    getTreeMaker().Ident(getNames().fromString("java.util.concurrent.atomic")),
-                                    getNames().fromString("AtomicBoolean")), false),
-                            getTreeMaker().Import(getTreeMaker().Select(getTreeMaker().Ident(getNames().fromString("java.lang.reflect")),
-                                    getNames().fromString("Field")), false));
-
-                    // Var named is_open.
-                    String isOpenIdentName = "is_open";
-                    int num = 0;
-                    while (allExistFieldNames.contains(isOpenIdentName)) { // Preventing naming conflicts.
-                        isOpenIdentName = String.format("is_open_%d", num);
-                        num++;
-                    }
-
-                    Context.currentIsOpenIdentName.set(isOpenIdentName);
-
-                    JCTree.JCIdent atomicBooleanIdent = getTreeMaker().Ident(getNames().fromString("AtomicBoolean"));
-
-                    // Generate code: static final AtomicBoolean is_open = null;
-                    classDecl.defs = classDecl.defs.append(getTreeMaker().VarDef(
-                            getTreeMaker().Modifiers(Flags.STATIC, com.sun.tools.javac.util.List.nil()),
-                            getNames().fromString(isOpenIdentName), atomicBooleanIdent,
-                            getTreeMaker().Literal(TypeTag.BOT, null)));
-
-                    // Generate static block to init is_open.
-                    classDecl.defs = classDecl.defs.append(getInitIsOpenStatement(assign.rhs.toString(), isOpenIdentName));
-                }
-            }
-        }
 
         String logIdentName;
         if ((importClasses.contains(LOMBOK_PACK) || importClasses.contains(LOMBOK_PACK_ROOT))
@@ -124,7 +90,7 @@ public class ClassProcessor extends TreeProcessor {
                 num++;
             }
 
-            // Import Logger.class, LoggerFactory.class, TRACE_ON_OFF.class.
+            // Import Logger.class, LoggerFactory.class.
             getFactory().get(ProcessorFactory.Kind.IMPORT).process(
                     getTreeMaker().Import(getTreeMaker().Select(getTreeMaker().Ident(getNames().fromString("org.slf4j")),
                             getNames().fromString("Logger")), false),
@@ -141,48 +107,133 @@ public class ClassProcessor extends TreeProcessor {
                                     getTreeMaker().Ident(getNames().fromString(classDecl.getSimpleName().toString())),
                                     getNames().fromString("class"))))));
         }
-        // Init config
+        // Init config.
         Context.currentLogIdentName.set(logIdentName);
 
-
-        // Filter out methods with @LogTrace annotation and process them
-        classDecl.defs.stream().filter(Objects::nonNull).filter(def -> def instanceof JCTree.JCMethodDecl)
+        // Filter out methods with @MethodLog annotation and process them.
+        List<JCTree.JCMethodDecl> allNeedProcessMethods = classDecl.getMembers().stream().filter(Objects::nonNull).filter(def -> def instanceof JCTree.JCMethodDecl)
                 .map(def -> (JCTree.JCMethodDecl) def)
-                .filter(def -> def.getModifiers().annotations != null && def.getModifiers().annotations.size() > 0)
-                .forEach(def -> {
-                    getFactory().get(ProcessorFactory.Kind.METHOD).process(def);
-                });
+                .filter(def -> {
+                    if (def.getModifiers().getAnnotations() != null && def.getModifiers().getAnnotations().size() > 0) {
+                        for (JCTree.JCAnnotation anno : def.getModifiers().getAnnotations()) {
+                            if (METHOD_LOG.equals(anno.getAnnotationType().type.toString())) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }).collect(Collectors.toList());
+        if (allNeedProcessMethods.size() > 0) {
+            Map<String, String> isOpens = getIsOpens(annoMap, allNeedProcessMethods);
+            if (isOpens != null && isOpens.size() > 0) {
+                List<JCTree.JCStatement> statements = getAllIsOpenStatements(isOpens);
+                if (statements != null && statements.size() > 0) {
+                    classDecl.accept(new JCTree.Visitor() {
+                        @Override
+                        public void visitClassDef(JCTree.JCClassDecl that) {
+                            that.defs = that.getMembers().appendList(com.sun.tools.javac.util.List.from(statements));
+                        }
+                    });
+                }
+            }
+            Context.allIsOpenMap.set(isOpens);
+            allNeedProcessMethods.forEach(def -> getFactory().get(ProcessorFactory.Kind.METHOD).process(def));
+        }
     }
 
-    private JCTree.JCStatement getInitIsOpenStatement(String isOpenAnnoValue, String isOpenObjName) {
-        String[] vs = isOpenAnnoValue.replace("\"", "").split("#");
-        JCTree.JCIdent classIdent = getTreeMaker().Ident(getNames().fromString("Class"));
-        Name clazzName = getNames().fromString("clazz");
-        // Class<?> clazz = Class.forName("xx.xx.x");
-        JCTree.JCVariableDecl clazzVar = getTreeMaker().VarDef(getTreeMaker().Modifiers(0), clazzName,
-                classIdent, getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(),
-                        getTreeMaker().Select(getTreeMaker().Ident(getNames().fromString("Class")), getNames().fromString("forName")),
-                        com.sun.tools.javac.util.List.of(getTreeMaker().Literal(vs[0]))));
+    /**
+     * Get all isOpen field, key = original field name, value = UUID var name.
+     */
+    private Map<String, String> getIsOpens(Map<String, JCTree.JCAnnotation> annoMap, List<JCTree.JCMethodDecl> methodDecls) {
+        Set<String> isOpenNames = new HashSet<>();
+        JCTree.JCAnnotation slf4jCheck = annoMap.get(SLF4J_CHECK);
+        String cIsOpen = getAnnoAttrValue(slf4jCheck, SLF4J_IS_OPEN);
+        if (cIsOpen != null) {
+            isOpenNames.add(cIsOpen);
+            Context.classIsOpenFieldName.set(cIsOpen);
+        }
 
-        JCTree.JCIdent fieldIdent = getTreeMaker().Ident(getNames().fromString("Field"));
-        Name fieldName = getNames().fromString("field");
-        // Field field = clazz.getField("isOpen");
-        JCTree.JCVariableDecl fieldVar = getTreeMaker().VarDef(getTreeMaker().Modifiers(0), fieldName,
-                fieldIdent, getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(),
-                        getTreeMaker().Select(getTreeMaker().Ident(clazzName), getNames().fromString("getField")),
-                        com.sun.tools.javac.util.List.of(getTreeMaker().Literal(vs[1]))));
+        methodDecls.forEach(m -> {
+            JCTree.JCAnnotation methodLog = m.getModifiers().getAnnotations().stream()
+                    .filter(a -> METHOD_LOG.equals(a.getAnnotationType().type.toString()))
+                    .collect(Collectors.toList())
+                    .get(0);
+            String mIsOpen = getAnnoAttrValue(methodLog, MethodProcessor.METHOD_LOG_IS_OPEN);
+            if (mIsOpen != null) {
+                isOpenNames.add(mIsOpen);
+            }
+        });
 
-        // field.setAccessible(true);
-        JCTree.JCMethodInvocation methodInvocation = getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(),
-                getTreeMaker().Select(getTreeMaker().Ident(fieldName), getNames().fromString("setAccessible")),
-                com.sun.tools.javac.util.List.of(getTreeMaker().Literal(true)));
+        if (isOpenNames.size() > 0) {
+            getFactory().get(ProcessorFactory.Kind.IMPORT).process(getTreeMaker().Import(getTreeMaker().Select(
+                            getTreeMaker().Ident(getNames().fromString("java.util.concurrent.atomic")),
+                            getNames().fromString("AtomicBoolean")), false),
+                    getTreeMaker().Import(getTreeMaker().Select(
+                            getTreeMaker().Ident(getNames().fromString("java.lang.reflect")),
+                            getNames().fromString("Field")), false));
 
-        // isOpen = (AtomicBoolean) field.get(null)
-        JCTree.JCAssign jcAssign = getTreeMaker().Assign(getTreeMaker().Ident(getNames().fromString(isOpenObjName)),
-                getTreeMaker().TypeCast(getTreeMaker().Ident(getNames().fromString("AtomicBoolean")),
-                        getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(), getTreeMaker().Select(
-                                        getTreeMaker().Ident(fieldName), getNames().fromString("get")),
-                                com.sun.tools.javac.util.List.of(getTreeMaker().Literal(TypeTag.BOT, null)))));
+            Map<String, String> isOpens = new LinkedHashMap<>();
+
+            isOpenNames.forEach(isOpen -> isOpens.put(isOpen, getNewVarName("is_open_")));
+
+            return isOpens;
+        }
+        return null;
+    }
+
+    private List<JCTree.JCStatement> getAllIsOpenStatements(Map<String, String> isOpenNameMap) {
+        if (isOpenNameMap == null) {
+            return null;
+        }
+        final List<JCTree.JCVariableDecl> isOpenVars = new ArrayList<>();
+        final List<JCTree.JCStatement> isOpenStatements = new ArrayList<>();
+
+        isOpenNameMap.forEach((className, varName) -> {
+
+            JCTree.JCIdent atomicBooleanIdent = getTreeMaker().Ident(getNames().fromString("AtomicBoolean"));
+            // Generate code: static final AtomicBoolean is_open = null;
+            isOpenVars.add(getTreeMaker().VarDef(
+                    getTreeMaker().Modifiers(Flags.STATIC, com.sun.tools.javac.util.List.nil()),
+                    getNames().fromString(varName), atomicBooleanIdent,
+                    getTreeMaker().Literal(TypeTag.BOT, null)));
+
+            String[] vs = className.replace("\"", "").split("#");
+            JCTree.JCIdent classIdent = getTreeMaker().Ident(getNames().fromString("Class"));
+            Name clazzName = getNames().fromString(getNewVarName("clazz_"));
+            // Class<?> clazz = Class.forName("xx.xx.x");
+            isOpenStatements.add(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), clazzName,
+                    classIdent, getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(),
+                            getTreeMaker().Select(getTreeMaker().Ident(getNames().fromString("Class")), getNames().fromString("forName")),
+                            com.sun.tools.javac.util.List.of(getTreeMaker().Literal(vs[0])))));
+
+            JCTree.JCIdent fieldIdent = getTreeMaker().Ident(getNames().fromString("Field"));
+            Name fieldName = getNames().fromString(getNewVarName("field_"));
+            Name isOpenName = getNames().fromString(varName);
+
+            // Field field = clazz.getField("isOpen");
+            isOpenStatements.add(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), fieldName,
+                    fieldIdent, getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(),
+                            getTreeMaker().Select(getTreeMaker().Ident(clazzName), getNames().fromString("getField")),
+                            com.sun.tools.javac.util.List.of(getTreeMaker().Literal(vs[1])))));
+
+            // field.setAccessible(true);
+            isOpenStatements.add(getTreeMaker().Exec(getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(),
+                    getTreeMaker().Select(getTreeMaker().Ident(fieldName), getNames().fromString("setAccessible")),
+                    com.sun.tools.javac.util.List.of(getTreeMaker().Literal(true)))));
+
+            // isOpen = (AtomicBoolean) field.get(null)
+            isOpenStatements.add(getTreeMaker().Exec(getTreeMaker().Assign(getTreeMaker().Ident(isOpenName),
+                    getTreeMaker().TypeCast(getTreeMaker().Ident(getNames().fromString("AtomicBoolean")),
+                            getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(), getTreeMaker().Select(
+                                            getTreeMaker().Ident(fieldName), getNames().fromString("get")),
+                                    com.sun.tools.javac.util.List.of(getTreeMaker().Literal(TypeTag.BOT, null)))))));
+
+            // isOpen.get()     to check if null.
+            isOpenStatements.add(getTreeMaker().Exec(getTreeMaker().Apply(com.sun.tools.javac.util.List.nil(),
+                    getTreeMaker().Select(getTreeMaker().Ident(isOpenName), getNames().fromString("get")),
+                    com.sun.tools.javac.util.List.nil())));
+        });
+
 
         // Exception e
         JCTree.JCVariableDecl exceptionVar = getTreeMaker().VarDef(getTreeMaker().Modifiers(0), getNames().fromString("e"),
@@ -195,10 +246,13 @@ public class ClassProcessor extends TreeProcessor {
 
         // try{...}catch(...){...}
         JCTree.JCTry jcTry = getTreeMaker().Try(getTreeMaker().Block(0,
-                        com.sun.tools.javac.util.List.of(clazzVar, fieldVar, getTreeMaker().Exec(methodInvocation), getTreeMaker().Exec(jcAssign))),
+                        com.sun.tools.javac.util.List.from(isOpenStatements)),
                 com.sun.tools.javac.util.List.of(getTreeMaker().Catch(exceptionVar, getTreeMaker().Block(0,
                         com.sun.tools.javac.util.List.of(throwStatement)))), null);
 
-        return getTreeMaker().Block(Flags.STATIC, com.sun.tools.javac.util.List.of(jcTry));
+        List<JCTree.JCStatement> result = new ArrayList<>(isOpenVars);
+        result.add(getTreeMaker().Block(Flags.STATIC, com.sun.tools.javac.util.List.of(jcTry)));
+
+        return result;
     }
 }

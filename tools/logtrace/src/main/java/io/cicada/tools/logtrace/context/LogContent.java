@@ -22,12 +22,17 @@ public class LogContent {
      * See: {@link org.slf4j.event.Level}
      */
     private final String traceLevel;
+    /**
+     * See {@link io.cicada.tools.logtrace.annos.MethodLog#isOpen()}.
+     */
+    private final String mIsOpen;
     private final StringBuilder paramContent = new StringBuilder();
     private final LinkedList<JCTree.JCExpression> params = new LinkedList<>();
 
-    LogContent(String methodName, String traceLevel, Map<String, JCTree.JCExpression> argMap) {
+    LogContent(String methodName, String traceLevel, String mIsOpen, Map<String, JCTree.JCExpression> argMap) {
         this.head = String.format("LOG_TRACE >>>>>> OUTPUT: [METHOD: %s]", methodName);
         this.traceLevel = traceLevel;
+        this.mIsOpen = mIsOpen;
         if (argMap != null && argMap.size() > 0) {
             processParams(paramContent, params, argMap);
         }
@@ -45,7 +50,17 @@ public class LogContent {
                 getLogParams(kind, lineMap.getLineNumber(jcTree.getStartPosition()),
                         content, newParams, treeMaker, names))));
 
-        String isOpen = Context.currentIsOpenIdentName.get();
+        Map<String, String> isOpens = Context.allIsOpenMap.get();
+        if (isOpens == null) {
+            return statement;
+        }
+        String isOpen = this.mIsOpen == null ? null : isOpens.get(this.mIsOpen);
+        if (isOpen == null || isOpen.equals("")) {
+            String cIsOpen = Context.classIsOpenFieldName.get();
+            if (cIsOpen != null) {
+                isOpen = isOpens.get(cIsOpen);
+            }
+        }
         if (isOpen != null && !isOpen.equals("")) {
             statement = treeMaker.If(treeMaker.Apply(com.sun.tools.javac.util.List.nil(),
                             treeMaker.Select(treeMaker.Ident(names.fromString(isOpen)),
