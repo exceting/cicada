@@ -35,13 +35,7 @@ public class VariableProcessor extends TreeProcessor {
     }
 
     /**
-     * Only process local variable, and the init value form conditional or method invoke.
-     * eg:
-     * <pre>
-     *     int a = conditional ? value1 : value2;
-     *     int b = getB();
-     *     int c = 1; // Not process!
-     * </pre>
+     * Only process local variable.
      */
     @Override
     public void process(JCTree jcTree) {
@@ -54,14 +48,9 @@ public class VariableProcessor extends TreeProcessor {
         }
 
         if (jcVariableDecl.getModifiers().getAnnotations() != null && jcVariableDecl.getModifiers().getAnnotations().size() > 0) {
-            boolean needProcess = false;
             List<JCTree.JCAnnotation> hit = jcVariableDecl.getModifiers().getAnnotations()
                     .stream()
-                    .filter(a -> {
-                        // FIXME The fully qualified name of the VarLog annotation should be used for comparison here,
-                        //  but it is not possible to retrieve its fully qualified name at this point.
-                        return VAR_LOG.equals(a.getAnnotationType().toString());
-                    })
+                    .filter(a -> VAR_LOG.equals(a.getAnnotationType().toString()))
                     .collect(Collectors.toList());
             if (hit.size() == 0) {
                 return;

@@ -10,6 +10,7 @@ import io.cicada.tools.logtrace.annos.VarLog;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Slf4jCheck
@@ -27,13 +28,7 @@ public class Demo {
                 Lists.newArrayList(new Object[]{new Object()}, new Object[]{new Object()}),
                 null,
                 null, Kind.ROOT);
-
-        String paramType = "Map<Map<String, Object>, String>";
-        if (paramType.contains("<")) {
-            long start = System.nanoTime();
-            paramType = paramType.substring(0, paramType.indexOf("<"));
-        }
-        System.out.println(paramType);
+        demo.ttttt(null);
     }
 
     public static void t(BiFunction<String, String, String> bf) {
@@ -43,7 +38,23 @@ public class Demo {
         }
     }
 
-    @MethodLog(dur = true, onlyVar = true)
+    @MethodLog
+    public void ttttt(Integer aaa) {
+        synchronized (new Consumer<>() {
+            @Override
+            public void accept(Object o) {
+                if (o == null) {
+                    System.out.println("lock o is null!");
+                }
+            }
+        }) {
+            if (aaa == null) {
+                System.out.println("aaa is null!");
+            }
+        }
+    }
+
+    @MethodLog(dur = true)
     public void demoMethod(@Ban int id,
                            @Ban String name,
                            List<String> books,
@@ -79,6 +90,24 @@ public class Demo {
                 info = getDefaultInfo();
             }
         }
+
+        @VarLog
+        Consumer<String> cccccc = books == null ? new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                if (Strings.isNullOrEmpty(s)) {
+                    System.out.println("三元表达式  条件1  s为空！");
+                }
+            }
+        } : new Consumer<String>() {
+            @Override
+            public void accept(String s) {
+                if (Strings.isNullOrEmpty(s)) {
+                    System.out.println("三元表达式  条件2  s为空！");
+                }
+            }
+        };
+        cccccc.accept(null);
 
         int i = 0;
         while (i < infos.length) {

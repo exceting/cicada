@@ -50,6 +50,7 @@ public class ProcessorFactory {
         processorMap.put(Tree.Kind.METHOD, new MethodDeclProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.PARENTHESIZED, new ParensProcessor(this, javacTrees, treeMaker, names));
         processorMap.put(Tree.Kind.TYPE_CAST, new TypeCastProcessor(this, javacTrees, treeMaker, names));
+        processorMap.put(Tree.Kind.SYNCHRONIZED, new SynchronizedProcessor(this, javacTrees, treeMaker, names));
     }
 
     public TreeProcessor get(Kind kind) {
