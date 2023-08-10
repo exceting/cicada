@@ -1,0 +1,7 @@
+// Artifacts.
+ext {
+    artifacts = [
+            ':mock'          : 'cicada-mock',
+            ':tools:logtrace': 'log-trace',
+    ]
+}

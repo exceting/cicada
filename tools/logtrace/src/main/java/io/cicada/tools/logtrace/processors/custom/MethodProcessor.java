@@ -112,20 +112,10 @@ public class MethodProcessor extends TreeProcessor {
                         newParamName = String.format("final_%s_%d", op.getName().toString(), num);
                         num++;
                     }
-                    JCTree.JCExpression typeIdent;
-                    String paramType = op.getType().toString();
-                    if (paramType.contains("<")) {
-                        typeIdent = getTreeMaker().Ident(getNames().fromString(paramType.substring(0, paramType.indexOf("<"))));
-                    } else if (paramType.contains("[")) {
-                        typeIdent = getTreeMaker().TypeArray(getTreeMaker().Ident(getNames().fromString(paramType.substring(0, paramType.indexOf("[")))));
-                    } else {
-                        typeIdent = getTreeMaker().Ident(getNames().fromString(paramType));
-                    }
-
                     JCTree.JCVariableDecl finalParam = getTreeMaker().VarDef(
                             getTreeMaker().Modifiers(Flags.FINAL, com.sun.tools.javac.util.List.nil()),
                             getNames().fromString(newParamName),
-                            typeIdent,
+                            getTreeMaker().Ident(getNames().fromString("Object")),
                             getTreeMaker().Ident(getNames().fromString(op.getName().toString()))
                     );
                     finalVars.add(finalParam);

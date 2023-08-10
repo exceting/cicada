@@ -1,4 +1,5 @@
 apply from: 'libs.gradle'
+apply from: 'artifacts.gradle'
 
 allprojects {
     apply plugin: 'idea'
@@ -13,12 +14,16 @@ allprojects {
     task printAllDependencies(type: DependencyReportTask) {}
 }
 
-configure(subprojects) { project ->
-    project.pluginManager.withPlugin('java', {
-        project.sourceSets.main.resources {
+configure(subprojects) { subProject ->
+    subProject.pluginManager.withPlugin('java', {
+        subProject.sourceSets.main.resources {
             srcDirs 'src/main/resources', 'src/main/java'
         }
     })
+
+    ext {
+        artifactId = rootProject.ext.artifacts[project.path] ? rootProject.ext.artifacts[project.path] : project.name
+    }
 
     pluginManager.withPlugin('java', {
         processResources {
@@ -28,12 +33,62 @@ configure(subprojects) { project ->
         def isLib = libP.any { p ->
             path.startsWith(p)
         }
-        tasks.withType(JavaCompile) {
-            sourceCompatibility = isLib ? 1.8 : 11
-            targetCompatibility = isLib ? 1.8 : 11
-            options.encoding = 'UTF-8'
+        tasks.withType(JavaCompile).tap {
+            configureEach {
+                sourceCompatibility = isLib ? 1.8 : 11
+                targetCompatibility = isLib ? 1.8 : 11
+                options.encoding = 'UTF-8'
+            }
         }
     })
+
+    def isMock = subProject.name.startsWith("mock")
+    if (!isMock) {
+        pluginManager.withPlugin('java-library', {
+            //apply maven plugin
+            apply plugin: 'maven-publish'
+
+            jar {
+                archiveBaseName.set(project.artifactId)
+            }
+        })
+
+        pluginManager.withPlugin('java-platform', {
+            //apply maven plugin
+            apply plugin: 'maven-publish'
+        })
+
+        pluginManager.withPlugin('maven-publish', {
+
+            publishing {
+                repositories {
+                    maven {
+                        def snapshot = version.endsWith('SNAPSHOT')
+                        url = snapshot ? snapshotRepo : releaseRepo
+                        credentials {
+                            username = repoUserName
+                            password = repoPassword
+                        }
+                    }
+                }
+
+                publications {
+                    maven(MavenPublication) {
+                        artifactId = project.artifactId
+                        from components.java
+                    }
+                }
+            }
+        })
+    }
+
+    //clean task
+    def cleanTasks = getTasksByName('clean', false)
+    if (cleanTasks != null && cleanTasks.size() > 0) {
+        clean {
+            delete 'out'
+        }
+    }
 }
 
 subprojects {

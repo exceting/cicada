@@ -4,16 +4,16 @@ import io.cicada.mock.tools.config.Test;
 import io.cicada.tools.logtrace.annos.Ban;
 import io.cicada.tools.logtrace.annos.MethodLog;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import io.cicada.tools.logtrace.annos.VarLog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @TestAnno
-//@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
+@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class MockForLogTrace {
 
     private static final String v = "xxxfxx";
@@ -35,13 +35,14 @@ public class MockForLogTrace {
 
 
 
-    @MethodLog
+    @MethodLog(isOpen = "io.cicada.mock.tools.config.Test#isOpen2", exceptionLog = true, dur = true)
     private void testIf(Integer id,
                         List<Integer> names,
                         int[] as,
                         List<String>[] lists,
                         @Ban EmptyInterface emptyInterface) {
         try {
+            @VarLog(dur = true)
             List<Integer> is = new ArrayList<>(List.of(new Integer[]{0, 2, 4}));
             for (Integer i : is) {
                 if (i == 2) {
@@ -112,7 +113,8 @@ public class MockForLogTrace {
 
             int a = 1;
             int b = 2;
-            int add = 0;
+            @VarLog(dur = true)
+            int add = a+b;
 
             if (add == 3) {
                 System.out.println("233333333");
@@ -125,6 +127,8 @@ public class MockForLogTrace {
             // do nothing
             throw e;
         }
+        @VarLog(dur = true)
+        int aaaaaaa = 55555;
     }
 
     private MockForLogTrace getMock() {

@@ -25,6 +25,6 @@ hs_err_pid*
 build/
 out/
 log/
-local.properties
+gradle.properties
 *.DS_Store
 *.pyc

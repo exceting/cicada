@@ -32,7 +32,7 @@ public class Test2 {
     public void t(@Ban Object o, String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
 
-        for(int i=0; i<5;i++){
+        for (int i = 0; i < 5; i++) {
 
         }
 

@@ -91,7 +91,7 @@ public class VariableProcessor extends TreeProcessor {
                             getTreeMaker().TypeIdent(TypeTag.LONG),
                             nanoTimeInvocation);
 
-                    originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset() - 1, // Prev line.
+                    originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset(), // Current line.
                             jcStartTime));
 
                     // Code: (System.nanoTime() - {a+UUID}) / 1000000L
