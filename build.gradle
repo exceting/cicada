@@ -40,6 +40,13 @@ configure(subprojects) { subProject ->
                 options.encoding = 'UTF-8'
             }
         }
+
+        task sourcesJar(type: Jar, dependsOn: classes) {
+            group = LifecycleBasePlugin.BUILD_GROUP
+            duplicatesStrategy = DuplicatesStrategy.INCLUDE
+            archiveClassifier.set('sources')
+            archiveBaseName.set(project.artifactId)
+        }
     })
 
     def isMock = subProject.name.startsWith("mock")
@@ -63,8 +70,7 @@ configure(subprojects) { subProject ->
             publishing {
                 repositories {
                     maven {
-                        def snapshot = version.endsWith('SNAPSHOT')
-                        url = snapshot ? snapshotRepo : releaseRepo
+                        url = version.endsWith('SNAPSHOT') ? snapshotRepo : releaseRepo
                         credentials {
                             username = repoUserName
                             password = repoPassword
@@ -76,6 +82,34 @@ configure(subprojects) { subProject ->
                     maven(MavenPublication) {
                         artifactId = project.artifactId
                         from components.java
+                        artifact sourcesJar
+
+                        pom {
+                            name = 'Cicada'
+                            description = 'Cicada Tools Mono Repo.'
+                            url = 'https://github.com/exceting/cicada'
+
+                            scm {
+                                connection = 'scm:git:git://github.com/exceting/cicada.git'
+                                url = 'https://github.com/exceting/cicada'
+                            }
+                            withXml {
+                                asNode().dependencies.'*'.findAll() {
+                                    it.scope.text() == 'runtime' && project.configurations.implementation.dependencies.find { dep ->
+                                        if (dep instanceof ProjectDependency) {
+                                            def p = dep.dependencyProject
+                                            p.artifactId == it.artifactId.text() && p.group == it.groupId.text()
+                                        } else if (dep instanceof ExternalModuleDependency) {
+                                            dep.name == it.artifactId.text() && dep.group == it.groupId.text()
+                                        } else {
+                                            dep.name == it.artifactId.text()
+                                        }
+                                    }
+                                }.each() {
+                                    it.scope*.value = 'compile'
+                                }
+                            }
+                        }
                     }
                 }
             }
