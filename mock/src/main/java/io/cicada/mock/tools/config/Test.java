@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 //@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class Test {
 
-    public static final AtomicBoolean isOpen = new AtomicBoolean(false);
+    public static final AtomicBoolean isOpen = new AtomicBoolean(true);
 
     public static final AtomicBoolean isOpen2 = new AtomicBoolean(true);
 

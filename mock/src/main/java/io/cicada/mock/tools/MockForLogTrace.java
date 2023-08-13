@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @TestAnno
-//@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
+@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class MockForLogTrace {
 
     private static final String v = "xxxfxx";
@@ -54,8 +54,10 @@ public class MockForLogTrace {
                 System.out.println(i);
             });
 
+            @VarLog
             boolean sss = isHid();
             Boolean ssss = isHid();
+            @VarLog
             List sss2 = getList();
             boolean isOpen = Test.isOpen.get();
             boolean sss3 = false;
