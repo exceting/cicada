@@ -13,7 +13,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-@Slf4jCheck
+//@Slf4jCheck
 public class Demo {
 
     //@LogTrace(exceptionLog = true, banLoop = true, traceLevel = Level.DEBUG)

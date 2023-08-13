@@ -26,6 +26,7 @@ public class ExpressionStatementProcessor extends TreeProcessor {
         JCTree.JCExpressionStatement expressionStatement = (JCTree.JCExpressionStatement) jcTree;
         JCTree.JCExpression expression = expressionStatement.getExpression();
         if (expression != null) {
+            System.out.println("------------   " + expression.getKind() + "   " + expression.getClass() + "   " + expression);
             getFactory().get(expression.getKind()).process(expression);
         }
     }

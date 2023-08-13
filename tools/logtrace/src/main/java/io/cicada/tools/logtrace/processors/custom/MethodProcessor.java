@@ -127,92 +127,77 @@ public class MethodProcessor extends TreeProcessor {
         Context.MethodConfig methodConfig = new Context.MethodConfig(
                 methodDecl.getName().toString(),
                 finalParamsMap, level, onlyVar, isOpen);
-        methodConfig.getBlockStack().push(new Context.MethodConfig.OriginCode(methodDecl.getBody()));
+        //methodConfig.getBlockStack().push(new Context.MethodConfig.OriginCode(methodDecl.getBody()));
         Context.currentMethodConfig.set(methodConfig);
 
-        try {
-            getFactory().get(methodDecl.getBody().getKind()).process(methodDecl.getBody());
 
-            // Do we need method start log?
-            /*methodDecl.getBody().accept(new JCTree.Visitor() {
-                @Override
-                public void visitBlock(JCTree.JCBlock that) {
-                    that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(startLogOffset,
-                            methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.METHOD, that,
-                                    "Start!", null, getTreeMaker(), getNames())));
-                }
-            });*/
+        getFactory().get(methodDecl.getBody().getKind()).process(methodDecl.getBody());
 
-            // Generate try-block statement.
-            JCTree.JCCatch jcCatch = null;
-            if (exceptionLog) {
+        // Generate try-block statement.
+        JCTree.JCCatch jcCatch = null;
+        if (exceptionLog) {
 
-                Name e = getNames().fromString("e");
-                JCTree.JCIdent eIdent = getTreeMaker().Ident(e);
-                Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
-                newArgs.put(null, eIdent);
-                jcCatch = getTreeMaker().Catch(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), e,
-                                getTreeMaker().Ident(getNames().fromString("Exception")), null),
-                        getTreeMaker().Block(0L, List.of(methodConfig.getLogContent()
-                                .getNewCodeStatement(Tree.Kind.TRY, methodDecl.getBody(),
-                                        "Error!", newArgs, getTreeMaker(), getNames()), getTreeMaker().Throw(eIdent))));
-            }
-
-            JCTree.JCBlock jcFinally = null;
-            JCTree.JCVariableDecl jcStartTime = null;
-            if (dur) {
-                Name newParamName = getNames().fromString(getNewVarName("start_"));
-
-                // Code: System.nanoTime()
-                JCTree.JCMethodInvocation nanoTimeInvocation = getTreeMaker().Apply(null, getTreeMaker().Select(
-                        getTreeMaker().Ident(getNames().fromString("System")),
-                        getNames().fromString("nanoTime")), List.nil());
-
-                // Code: final long log_trace_start = System.nanoTime()
-                jcStartTime = getTreeMaker().VarDef(getTreeMaker().Modifiers(Flags.FINAL, com.sun.tools.javac.util.List.nil()),
-                        newParamName,
-                        getTreeMaker().TypeIdent(TypeTag.LONG),
-                        nanoTimeInvocation);
-
-                // Code: (System.nanoTime() - log_trace_start) / 1000000L
-                Map<String, JCTree.JCExpression> newParams = new LinkedHashMap<>();
-                newParams.put("duration", getTreeMaker().Binary(JCTree.Tag.DIV,
-                        getTreeMaker().Parens(getTreeMaker().Binary(JCTree.Tag.MINUS,
-                                nanoTimeInvocation, getTreeMaker().Ident(newParamName))),
-                        getTreeMaker().Literal(1000000L)));
-
-                // Code: finally { trace_logger.debug("xxxx Finished! duration = 25") }
-                jcFinally = getTreeMaker().Block(0L, List.of(methodConfig.getLogContent().getNewCodeStatement(
-                        Tree.Kind.TRY, methodDecl.getBody(), "Finished!",
-                        newParams, getTreeMaker(), getNames())));
-            }
-
-            final JCTree.JCCatch finalJcCatch = jcCatch;
-            final JCTree.JCBlock finalJcFinally = jcFinally;
-            final JCTree.JCVariableDecl finalStartTime = jcStartTime;
-            methodDecl.getBody().accept(new JCTree.Visitor() {
-                @Override
-                public void visitBlock(JCTree.JCBlock that) {
-                    that.stats = List.of(getTreeMaker().Try(getTreeMaker().Block(that.flags, that.stats),
-                            finalJcCatch == null ? List.nil() : List.of(finalJcCatch), finalJcFinally));
-                }
-            });
-
-            // Generate top variables.
-            java.util.List<JCTree.JCVariableDecl> topVars = new ArrayList<>(finalVars);
-            if (finalStartTime != null) {
-                topVars.add(finalStartTime);
-            }
-            topVars.forEach(tv -> methodDecl.getBody().accept(new JCTree.Visitor() {
-                @Override
-                public void visitBlock(JCTree.JCBlock that) {
-                    that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0, tv));
-                }
-            }));
-        } finally {
-            methodConfig.getBlockStack().pop();
+            Name e = getNames().fromString("e");
+            JCTree.JCIdent eIdent = getTreeMaker().Ident(e);
+            Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
+            newArgs.put(null, eIdent);
+            jcCatch = getTreeMaker().Catch(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), e,
+                            getTreeMaker().Ident(getNames().fromString("Exception")), null),
+                    getTreeMaker().Block(0L, List.of(methodConfig.getLogContent()
+                            .getNewCodeStatement(Tree.Kind.TRY, methodDecl.getBody(),
+                                    "Error!", newArgs, getTreeMaker(), getNames()), getTreeMaker().Throw(eIdent))));
         }
+
+        JCTree.JCBlock jcFinally = null;
+        JCTree.JCVariableDecl jcStartTime = null;
+        if (dur) {
+            Name newParamName = getNames().fromString(getNewVarName("start_"));
+
+            // Code: System.nanoTime()
+            JCTree.JCMethodInvocation nanoTimeInvocation = getTreeMaker().Apply(null, getTreeMaker().Select(
+                    getTreeMaker().Ident(getNames().fromString("System")),
+                    getNames().fromString("nanoTime")), List.nil());
+
+            // Code: final long log_trace_start = System.nanoTime()
+            jcStartTime = getTreeMaker().VarDef(getTreeMaker().Modifiers(Flags.FINAL, com.sun.tools.javac.util.List.nil()),
+                    newParamName,
+                    getTreeMaker().TypeIdent(TypeTag.LONG),
+                    nanoTimeInvocation);
+
+            // Code: (System.nanoTime() - log_trace_start) / 1000000L
+            Map<String, JCTree.JCExpression> newParams = new LinkedHashMap<>();
+            newParams.put("duration", getTreeMaker().Binary(JCTree.Tag.DIV,
+                    getTreeMaker().Parens(getTreeMaker().Binary(JCTree.Tag.MINUS,
+                            nanoTimeInvocation, getTreeMaker().Ident(newParamName))),
+                    getTreeMaker().Literal(1000000L)));
+
+            // Code: finally { trace_logger.debug("xxxx Finished! duration = 25") }
+            jcFinally = getTreeMaker().Block(0L, List.of(methodConfig.getLogContent().getNewCodeStatement(
+                    Tree.Kind.TRY, methodDecl.getBody(), "Finished!",
+                    newParams, getTreeMaker(), getNames())));
+        }
+
+        final JCTree.JCCatch finalJcCatch = jcCatch;
+        final JCTree.JCBlock finalJcFinally = jcFinally;
+        final JCTree.JCVariableDecl finalStartTime = jcStartTime;
+        methodDecl.getBody().accept(new JCTree.Visitor() {
+            @Override
+            public void visitBlock(JCTree.JCBlock that) {
+                that.stats = List.of(getTreeMaker().Try(getTreeMaker().Block(that.flags, that.stats),
+                        finalJcCatch == null ? List.nil() : List.of(finalJcCatch), finalJcFinally));
+            }
+        });
+
+        // Generate top variables.
+        java.util.List<JCTree.JCVariableDecl> topVars = new ArrayList<>(finalVars);
+        if (finalStartTime != null) {
+            topVars.add(finalStartTime);
+        }
+        topVars.forEach(tv -> methodDecl.getBody().accept(new JCTree.Visitor() {
+            @Override
+            public void visitBlock(JCTree.JCBlock that) {
+                that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0, tv));
+            }
+        }));
     }
-
-
 }

@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
+//@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class Test2 {
 
     static final int VV = 5;

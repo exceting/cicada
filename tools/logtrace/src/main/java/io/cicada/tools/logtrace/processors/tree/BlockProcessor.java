@@ -23,7 +23,12 @@ public class BlockProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCBlock)) {
             return;
         }
+        Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
         Context.MethodConfig.OriginCode originCode = new Context.MethodConfig.OriginCode((JCTree.JCBlock) jcTree);
+        if (!methodConfig.getBlockStack().isEmpty() && !methodConfig.isInClassOrLambda()) {
+            Context.MethodConfig.OriginCode parentOriginCode = Context.currentMethodConfig.get().getBlockStack().peek();
+            originCode.getVars().putAll(parentOriginCode.getVars()); // Inherit the vars of the parent block
+        }
         Context.currentMethodConfig.get().getBlockStack().push(originCode);
         try {
             if (originCode.getBlock().getStatements() == null || originCode.getBlock().getStatements().size() == 0) {

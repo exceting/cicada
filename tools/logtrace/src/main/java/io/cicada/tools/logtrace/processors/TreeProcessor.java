@@ -106,7 +106,7 @@ public abstract class TreeProcessor {
     /**
      * Generate new variable names; Use UUID to avoid conflicts.
      */
-    public String getNewVarName(String head) {
+    public static String getNewVarName(String head) {
         return String.format("%s%s", head, UUID.randomUUID()).replace("-", "_");
     }
 

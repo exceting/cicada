@@ -56,8 +56,9 @@ public class VariableProcessor extends TreeProcessor {
                 return;
             }
 
+            Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
             // Get current block.
-            Context.MethodConfig.OriginCode originCode = Context.currentMethodConfig.get().getBlockStack().peek();
+            Context.MethodConfig.OriginCode originCode = methodConfig.getBlockStack().peek();
             if (originCode != null) {
                 JCTree.JCAnnotation anno = hit.get(0); // Get 1st.
                 boolean dur = false;
@@ -72,39 +73,46 @@ public class VariableProcessor extends TreeProcessor {
                         }
                     }
                 }
+                originCode.getVars().put(jcVariableDecl.getName().toString(), new Context.MethodConfig.VarConfig(dur));
 
-                Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
-                Map<String, JCTree.JCExpression> newArgs = new LinkedHashMap<>();
-                newArgs.put(jcVariableDecl.getName().toString(), getTreeMaker().Ident(jcVariableDecl.getName()));
-                if (dur) {
-
-                    Name newParamName = getNames().fromString(getNewVarName("var_start_"));
-
-                    // Code: System.nanoTime()
-                    JCTree.JCMethodInvocation nanoTimeInvocation = getTreeMaker().Apply(null, getTreeMaker().Select(
-                            getTreeMaker().Ident(getNames().fromString("System")),
-                            getNames().fromString("nanoTime")), com.sun.tools.javac.util.List.nil());
-
-                    // Code: final long {a+UUID} = System.nanoTime()
-                    JCTree.JCVariableDecl jcStartTime = getTreeMaker().VarDef(getTreeMaker().Modifiers(Flags.FINAL, com.sun.tools.javac.util.List.nil()),
-                            newParamName,
-                            getTreeMaker().TypeIdent(TypeTag.LONG),
-                            nanoTimeInvocation);
-
-                    originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset(), // Current line.
-                            jcStartTime));
-
-                    // Code: (System.nanoTime() - {a+UUID}) / 1000000L
-                    newArgs.put("duration", getTreeMaker().Binary(JCTree.Tag.DIV,
-                            getTreeMaker().Parens(getTreeMaker().Binary(JCTree.Tag.MINUS,
-                                    nanoTimeInvocation, getTreeMaker().Ident(newParamName))),
-                            getTreeMaker().Literal(1000000L)));
-                }
-                originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset() + 1, // Next line.
-                        methodConfig.getLogContent()
-                                .getNewCodeStatement(Tree.Kind.VARIABLE, jcVariableDecl,
-                                        "", newArgs, getTreeMaker(), getNames())));
+                attachVarLog(jcVariableDecl.getName().toString(), dur, methodConfig,
+                        originCode, jcVariableDecl, getTreeMaker(), getNames());
             }
         }
+    }
+
+    static void attachVarLog(String varName, boolean dur, Context.MethodConfig methodConfig,
+                             Context.MethodConfig.OriginCode originCode,
+                             JCTree jcTree, TreeMaker treeMaker, Names names) {
+        Map<String, JCTree.JCExpression> newArgs = new LinkedHashMap<>();
+        newArgs.put(varName, treeMaker.Ident(names.fromString(varName)));
+        if (dur) {
+
+            Name newParamName = names.fromString(getNewVarName("var_start_"));
+
+            // Code: System.nanoTime()
+            JCTree.JCMethodInvocation nanoTimeInvocation = treeMaker.Apply(null, treeMaker.Select(
+                    treeMaker.Ident(names.fromString("System")),
+                    names.fromString("nanoTime")), com.sun.tools.javac.util.List.nil());
+
+            // Code: final long {a+UUID} = System.nanoTime()
+            JCTree.JCVariableDecl jcStartTime = treeMaker.VarDef(treeMaker.Modifiers(Flags.FINAL, com.sun.tools.javac.util.List.nil()),
+                    newParamName,
+                    treeMaker.TypeIdent(TypeTag.LONG),
+                    nanoTimeInvocation);
+
+            originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset(), // Current line.
+                    jcStartTime));
+
+            // Code: (System.nanoTime() - {a+UUID}) / 1000000L
+            newArgs.put("duration", treeMaker.Binary(JCTree.Tag.DIV,
+                    treeMaker.Parens(treeMaker.Binary(JCTree.Tag.MINUS,
+                            nanoTimeInvocation, treeMaker.Ident(newParamName))),
+                    treeMaker.Literal(1000000L)));
+        }
+        originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset() + 1, // Next line.
+                methodConfig.getLogContent()
+                        .getNewCodeStatement(Tree.Kind.VARIABLE, jcTree,
+                                "", newArgs, treeMaker, names)));
     }
 }

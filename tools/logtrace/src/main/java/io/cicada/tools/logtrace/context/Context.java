@@ -52,7 +52,9 @@ public class Context {
 
         private final boolean onlyVar;
 
-        private final Stack<OriginCode> blockStack = new Stack<>(); // Method stack.
+        private boolean isInClassOrLambda = false;
+
+        private final Stack<OriginCode> blockStack = new Stack<>(); // Block stack.
 
         public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, String traceLevel,
                             boolean onlyVar, String mIsOpen) {
@@ -72,11 +74,36 @@ public class Context {
             return onlyVar;
         }
 
+        public void setInClassOrLambda(boolean inClassOrLambda) {
+            isInClassOrLambda = inClassOrLambda;
+        }
+
+        public boolean isInClassOrLambda() {
+            return isInClassOrLambda;
+        }
+
+        /**
+         * The attr of {@link io.cicada.tools.logtrace.annos.VarLog}
+         */
+        public static class VarConfig {
+            private final boolean dur;
+
+            public VarConfig(boolean dur) {
+                this.dur = dur;
+            }
+
+            public boolean isDur() {
+                return dur;
+            }
+        }
+
         public static class OriginCode {
             private int offset = 0;
             // Need add to current block when pop stack.
             private final List<NewCode> newCodes = new ArrayList<>();
             private final JCTree.JCBlock block;
+            // The collection of all variables annotated by @VarLog in the current block.
+            private final Map<String, VarConfig> vars = new LinkedHashMap<>();
 
             public OriginCode(JCTree.JCBlock block) {
                 this.block = block;
@@ -100,6 +127,10 @@ public class Context {
 
             public List<NewCode> getNewCodes() {
                 return newCodes;
+            }
+
+            public Map<String, VarConfig> getVars() {
+                return vars;
             }
         }
 

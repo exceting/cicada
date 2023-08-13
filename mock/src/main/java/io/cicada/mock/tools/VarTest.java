@@ -1,41 +1,59 @@
 package io.cicada.mock.tools;
 
+import io.cicada.tools.logtrace.annos.MethodLog;
+import io.cicada.tools.logtrace.annos.Slf4jCheck;
+import io.cicada.tools.logtrace.annos.VarLog;
+
 import java.util.function.Consumer;
 
+@Slf4jCheck
 public class VarTest {
 
+    @MethodLog(exceptionLog = true, dur = true)
     public static void main(String[] args) {
+
+        @VarLog(dur = true)
         int a = 1;
-        {
-            int a_2 = 2;
-        }
-        {
-            int a_2 = 3;
+
+        a = 2;
+
+        if (args == null || args.length == 0) {
+            a = 7;
             {
-                int a_2_3 = 4;
+                a = 8;
+
+                int cc = 10;
+                cc = 11;
             }
             {
-                int a_2_3 = 5;
+                @VarLog
+                int cc = 888;
+                cc = 999;
             }
         }
 
-        new Consumer<>(){
+        new Consumer<String>() {
+
+            int a = 0;
 
             @Override
-            public void accept(Object o) {
-                System.out.println(a);
-                int a=2;
-                System.out.println(a);
+            public void accept(String s) {
+                if (s == null) {
+                    int a = 9;
+                    a = 10;
+                }
             }
         }.accept(null);
 
-        int i = 0;
-        if ((i = 1) == 1) {
+        @VarLog
+        int b = 5;
+        b = 6;
 
+        if ((b = 7) > 6) {
+            System.out.println("xxxxx111  " + b);
         }
-        {
 
-        }
+        System.out.println("xxxxx");
     }
 
 }

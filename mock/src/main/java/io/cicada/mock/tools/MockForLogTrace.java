@@ -13,10 +13,11 @@ import java.util.List;
 import java.util.Map;
 
 @TestAnno
-@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
+//@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class MockForLogTrace {
 
     private static final String v = "xxxfxx";
+
     public static void main(String[] args) {
         MockForLogTrace m = new MockForLogTrace();
         m.testException();
@@ -32,7 +33,6 @@ public class MockForLogTrace {
     }
 
     static final Logger logger = LoggerFactory.getLogger(MockForLogTrace.class);
-
 
 
     @MethodLog(isOpen = "io.cicada.mock.tools.config.Test#isOpen2", exceptionLog = true, dur = true)
@@ -114,7 +114,7 @@ public class MockForLogTrace {
             int a = 1;
             int b = 2;
             @VarLog(dur = true)
-            int add = a+b;
+            int add = a + b;
 
             if (add == 3) {
                 System.out.println("233333333");

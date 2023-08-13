@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
+//@Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 public class Test {
 
     public static final AtomicBoolean isOpen = new AtomicBoolean(false);
