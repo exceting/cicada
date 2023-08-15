@@ -26,7 +26,6 @@ public class AssignProcessor extends TreeProcessor {
             Context.MethodConfig.OriginCode originCode = methodConfig.getBlockStack().peek();
             String varName = assign.getVariable().toString();
             if (originCode.getVars().containsKey(varName)) {
-                System.out.println("========  " + assign.getVariable().getKind() + "    " + assign.getVariable());
                 VariableProcessor.attachVarLog(varName, originCode.getVars().get(varName).isDur(), methodConfig,
                         originCode, assign.getVariable(), getTreeMaker(), getNames());
             }

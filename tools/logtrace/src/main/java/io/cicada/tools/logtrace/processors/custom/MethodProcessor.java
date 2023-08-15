@@ -26,6 +26,8 @@ public class MethodProcessor extends TreeProcessor {
 
     static final String METHOD_LOG_EXCEPTION = "exceptionLog";
 
+    static final String METHOD_NO_THROW = "noThrow";
+
     static final String METHOD_LOG_DUR = "dur";
 
     static final String METHOD_LOG_ONLY_VAR = "onlyVar";
@@ -57,6 +59,7 @@ public class MethodProcessor extends TreeProcessor {
                 .get(0);
 
         boolean exceptionLog = false;
+        boolean noThrow = false;
         boolean dur = false;
         boolean onlyVar = false;
         String level = "Level.DEBUG";
@@ -69,6 +72,9 @@ public class MethodProcessor extends TreeProcessor {
                 JCTree.JCAssign assign = (JCTree.JCAssign) arg;
                 if (METHOD_LOG_EXCEPTION.equals(assign.lhs.toString())) {
                     exceptionLog = "true".equals(assign.rhs.toString());
+                }
+                if (METHOD_NO_THROW.equals(assign.lhs.toString())) {
+                    noThrow = "true".equals(assign.rhs.toString());
                 }
                 if (METHOD_LOG_DUR.equals(assign.lhs.toString())) {
                     dur = "true".equals(assign.rhs.toString());
@@ -141,11 +147,16 @@ public class MethodProcessor extends TreeProcessor {
             JCTree.JCIdent eIdent = getTreeMaker().Ident(e);
             Map<String, JCTree.JCExpression> newArgs = new HashMap<>();
             newArgs.put(null, eIdent);
+
+            List<JCTree.JCStatement> statements = List.of(methodConfig.getLogContent()
+                    .getNewCodeStatement(Tree.Kind.TRY, methodDecl.getBody(),
+                            "Error!", newArgs, getTreeMaker(), getNames()));
+            if (!noThrow) {
+                statements = statements.append(getTreeMaker().Throw(eIdent));
+            }
             jcCatch = getTreeMaker().Catch(getTreeMaker().VarDef(getTreeMaker().Modifiers(0), e,
                             getTreeMaker().Ident(getNames().fromString("Exception")), null),
-                    getTreeMaker().Block(0L, List.of(methodConfig.getLogContent()
-                            .getNewCodeStatement(Tree.Kind.TRY, methodDecl.getBody(),
-                                    "Error!", newArgs, getTreeMaker(), getNames()), getTreeMaker().Throw(eIdent))));
+                    getTreeMaker().Block(0L, statements));
         }
 
         JCTree.JCBlock jcFinally = null;

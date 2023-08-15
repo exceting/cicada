@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 @Slf4jCheck
 public class VarTest {
 
-    @MethodLog(exceptionLog = true, dur = true)
+    @MethodLog(exceptionLog = true, noThrow = false, dur = true)
     public static void main(String[] args) {
 
         @VarLog(dur = true)

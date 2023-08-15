@@ -20,6 +20,11 @@ public @interface MethodLog {
     boolean exceptionLog() default false;
 
     /**
+     * Use with {@link MethodLog#exceptionLog()}, if true, only catch exception but not throw.
+     */
+    boolean noThrow() default false;
+
+    /**
      * If true, the duration to execute this method will be printed.
      */
     boolean dur() default false;
