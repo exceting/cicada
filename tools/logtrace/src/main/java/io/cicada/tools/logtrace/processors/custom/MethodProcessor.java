@@ -150,7 +150,7 @@ public class MethodProcessor extends TreeProcessor {
 
             List<JCTree.JCStatement> statements = List.of(methodConfig.getLogContent()
                     .getNewCodeStatement(Tree.Kind.TRY, methodDecl.getBody(),
-                            "Error!", newArgs, getTreeMaker(), getNames()));
+                            "Error!", newArgs, getTreeMaker(), getNames(), "Level.ERROR"));
             if (!noThrow) {
                 statements = statements.append(getTreeMaker().Throw(eIdent));
             }

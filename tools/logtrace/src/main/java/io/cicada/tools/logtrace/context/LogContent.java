@@ -43,11 +43,19 @@ public class LogContent {
                                                   String content,
                                                   Map<String, JCTree.JCExpression> newParams,
                                                   TreeMaker treeMaker, Names names) {
+        return getNewCodeStatement(kind, jcTree, content, newParams, treeMaker, names, null);
+    }
+
+    public JCTree.JCStatement getNewCodeStatement(Tree.Kind kind,
+                                                  JCTree jcTree,
+                                                  String content,
+                                                  Map<String, JCTree.JCExpression> newParams,
+                                                  TreeMaker treeMaker, Names names, String traceLevel) {
         Position.LineMap lineMap = Context.lineMap.get();
         JCTree.JCStatement statement = treeMaker.Exec(treeMaker.Apply(com.sun.tools.javac.util.List.nil(), treeMaker.Select(
-                treeMaker.Ident(names.fromString(Context.currentLogIdentName.get())),
-                getSlf4jMethod(traceLevel, names)), com.sun.tools.javac.util.List.from(
-                getLogParams(kind, lineMap.getLineNumber(jcTree.getStartPosition()),
+                        treeMaker.Ident(names.fromString(Context.currentLogIdentName.get())),
+                        getSlf4jMethod(traceLevel == null ? this.traceLevel : traceLevel, names)),
+                com.sun.tools.javac.util.List.from(getLogParams(kind, lineMap.getLineNumber(jcTree.getStartPosition()),
                         content, newParams, treeMaker, names))));
 
         Map<String, String> isOpens = Context.allIsOpenMap.get();
