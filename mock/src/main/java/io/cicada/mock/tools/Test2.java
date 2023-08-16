@@ -28,7 +28,7 @@ public class Test2 {
         System.out.println(a5f719a72_3f91_4678_b4f5_76dba46900d0);
     }
 
-    @MethodLog(exceptionLog = true, dur = true, onlyVar = true, traceLevel = Level.INFO, isOpen = "io.cicada.mock.tools.config.Test#isOpen2")
+    @MethodLog(exceptionLog = true, dur = true, onlyVar = true, isOpen = "io.cicada.mock.tools.config.Test#isOpen2")
     public void t(@Ban Object o, String s) {
         Object[] sss8 = isHid() ? new Object[]{new Object()} : null;
 

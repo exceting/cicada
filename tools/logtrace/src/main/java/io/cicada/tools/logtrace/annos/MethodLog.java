@@ -37,7 +37,7 @@ public @interface MethodLog {
     /**
      * Level of trace log.
      */
-    Level traceLevel() default Level.DEBUG;
+    Level traceLevel() default Level.INFO;
 
     /**
      * Like {@link Slf4jCheck#isOpen()}, but the priority is higher.
