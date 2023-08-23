@@ -62,7 +62,7 @@ public class MethodProcessor extends TreeProcessor {
         boolean noThrow = false;
         boolean dur = false;
         boolean onlyVar = false;
-        String level = "Level.DEBUG";
+        String level = "Level.INFO";
         String isOpen = null;
         if (traceAnno.getArguments() != null && traceAnno.getArguments().size() > 0) {
             for (JCTree.JCExpression arg : traceAnno.getArguments()) {
