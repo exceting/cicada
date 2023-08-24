@@ -1,0 +1,10 @@
+apply plugin: 'java'
+
+dependencies {
+    compileOnly project(":tools:logtrace")
+    annotationProcessor project(":tools:logtrace")
+    implementation libs["slf4j"]
+    implementation libs["logback"]
+    implementation libs["guava"]
+    implementation libs["spring-context"]
+}
