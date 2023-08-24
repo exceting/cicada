@@ -6,4 +6,6 @@ dependencies {
     implementation libs["slf4j"]
     implementation libs["logback"]
     implementation libs["guava"]
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2'
+    implementation 'com.alibaba:fastjson:1.2.83'
 }
