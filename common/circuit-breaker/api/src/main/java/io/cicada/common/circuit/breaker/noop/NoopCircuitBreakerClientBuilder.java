@@ -7,8 +7,9 @@ import io.cicada.common.circuit.breaker.api.CircuitBreakerClientBuilder;
  * Create {@link NoopCircuitBreakerClient}
  */
 public class NoopCircuitBreakerClientBuilder implements CircuitBreakerClientBuilder {
+
     @Override
-    public CircuitBreakerClient build() {
+    public <CONFIG> CircuitBreakerClient build(CONFIG config) {
         return new NoopCircuitBreakerClient();
     }
 }

@@ -1,8 +1,7 @@
 package io.cicada.common.circuit.breaker.api;
 
 import io.cicada.common.circuit.breaker.noop.NoopCircuitBreakerClientBuilder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,33 +9,30 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public class CircuitBreakerRegistry {
-
-    private static final Logger log = LoggerFactory.getLogger(CircuitBreakerRegistry.class);
-
-    private static final CircuitBreakerRegistry INSTANCE = new CircuitBreakerRegistry();
 
     private final Map<String, CircuitBreakerClient> clientMap = new ConcurrentHashMap<>();
 
     private final CircuitBreakerClientBuilder circuitBreakerClientBuilder;
 
     /**
-     * Get a {@link CircuitBreakerClientBuilder} obj by spi.
+     * Get {@link CircuitBreakerClientBuilder} obj by spi.
      */
     private CircuitBreakerRegistry() {
         ServiceLoader<CircuitBreakerClientBuilder> circuitBreakerClientBuilders = ServiceLoader.load(CircuitBreakerClientBuilder.class);
         List<CircuitBreakerClientBuilder> builders = new ArrayList<>();
         circuitBreakerClientBuilders.forEach(builders::add);
         if (builders.size() == 0) {
-            log.warn("Can't find any implementation of 'CircuitBreakerClientBuilder', 'NoopCircuitBreakerClientBuilder' will be loaded!");
+            log.warn("Can't load any implementation of 'CircuitBreakerClientBuilder', 'NoopCircuitBreakerClientBuilder' will be loaded!");
             circuitBreakerClientBuilder = new NoopCircuitBreakerClientBuilder();
         } else {
             circuitBreakerClientBuilder = builders.get(0); // Default get 1st.
         }
     }
 
-    public void createAndRegister(String name) {
-        register(name, circuitBreakerClientBuilder.build());
+    public <CONFIG> void createAndRegister(String name, CONFIG config) {
+        register(name, circuitBreakerClientBuilder.build(config));
     }
 
     public void register(Map<String, CircuitBreakerClient> clients) {

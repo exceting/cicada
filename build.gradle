@@ -14,6 +14,21 @@ allprojects {
     task printAllDependencies(type: DependencyReportTask) {}
 }
 
+subprojects {
+    buildscript {
+        repositories {
+            mavenCentral()
+            maven { url "https://repo1.maven.org/maven2/" }
+            maven { url "https://plugins.gradle.org/m2" }
+        }
+
+        dependencies {
+            classpath libs["gradle-lombok"]
+            classpath libs["errorprone-gradle"]
+        }
+    }
+}
+
 configure(subprojects) { subProject ->
     subProject.pluginManager.withPlugin('java', {
         subProject.sourceSets.main.resources {
@@ -29,6 +44,13 @@ configure(subprojects) { subProject ->
         processResources {
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
+
+        apply plugin: "io.franzbecker.gradle-lombok"
+        lombok {
+            version = versions['lombok']
+            sha256 = ""
+        }
+
         def libP = [':tools']
         def isLib = libP.any { p ->
             path.startsWith(p)
@@ -121,21 +143,6 @@ configure(subprojects) { subProject ->
     if (cleanTasks != null && cleanTasks.size() > 0) {
         clean {
             delete 'out'
-        }
-    }
-}
-
-subprojects {
-    buildscript {
-        repositories {
-            mavenCentral()
-            maven { url "https://repo1.maven.org/maven2/" }
-            maven { url "https://plugins.gradle.org/m2" }
-        }
-
-        dependencies {
-            classpath libs["gradle-lombok"]
-            classpath libs["errorprone-gradle"]
         }
     }
 }

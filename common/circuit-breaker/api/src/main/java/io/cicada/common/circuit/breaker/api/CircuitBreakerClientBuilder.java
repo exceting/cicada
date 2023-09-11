@@ -7,5 +7,5 @@ public interface CircuitBreakerClientBuilder {
      *
      * @return New circuit breaker obj.
      */
-    CircuitBreakerClient build();
+    <CONFIG> CircuitBreakerClient build(CONFIG config);
 }

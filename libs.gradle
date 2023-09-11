@@ -19,6 +19,7 @@ ext {
             'mysql'            : '8.0.21',
             'protobuf'         : '3.11.0',
             'grpc'             : '1.29.0',
+            'lombok'           : '1.18.26',
             'gradle-lombok'    : '5.0.0',
             'jedis'            : '2.9.0',
             'errorprone-gradle': '2.0.1',
