@@ -10,29 +10,35 @@ import java.util.function.Supplier;
 public interface CircuitBreakerClient {
 
     /**
+     * Initialize a circuit breaker with its config.
+     */
+    void init(CircuitBreakerConfig config);
+
+    /**
      * Execute for {@link Callable}
      *
+     * @param name     Circuit breaker name.
      * @param callable Method of requiring circuit breaker listening.
      * @param <T>      Result type.
      * @return The result of callable.
      * @throws Exception Callable execution exception, or throw {@link CircuitBreakerException}.
      */
-    <T> T execute(Callable<T> callable) throws Exception;
+    <T> T execute(String name, Callable<T> callable) throws Exception;
 
     /**
      * Execute for {@link Supplier}
      */
-    <T> T execute(Supplier<T> supplier) throws Exception;
+    <T> T execute(String name, Supplier<T> supplier) throws Exception;
 
     /**
      * Execute for {@link Function}
      */
-    <T, R> R execute(Function<T, R> function, T t) throws Exception;
+    <T, R> R execute(String name, Function<T, R> function, T t) throws Exception;
 
     /**
      * Execute for {@link Runnable}
      */
-    void execute(Runnable runnable) throws Exception;
+    void execute(String name, Runnable runnable) throws Exception;
 
     /**
      * If request is allowed? If broken, return false, else return true.
@@ -43,9 +49,10 @@ public interface CircuitBreakerClient {
     boolean allowRequest(String name);
 
     /**
-     * Reset the circuit breaker, and init statistics.
+     * @param name Circuit breaker name.
+     *             Reset the circuit breaker, and init statistics.
      */
-    void reset();
+    void reset(String name);
 
     /**
      * Records a failed call.

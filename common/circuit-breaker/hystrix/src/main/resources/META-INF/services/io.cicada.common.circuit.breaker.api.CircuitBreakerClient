@@ -1,0 +1,1 @@
+io.cicada.common.circuit.breaker.hystrix.HystrixClient
