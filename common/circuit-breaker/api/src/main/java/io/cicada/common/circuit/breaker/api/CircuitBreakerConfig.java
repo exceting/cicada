@@ -14,12 +14,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class CircuitBreakerConfig {
 
     /**
-     * Global circuit breaker rules, enable when a method doesn't customize its own rules.
+     * Global circuit breaker config, enable when a method doesn't customize its own config.
      */
     private Config global = new Config();
 
     /**
-     * You can customize circuit breaker rules for some target resources.
+     * You can customize circuit breaker configs for some target methods.
+     * Key: Method name.
+     * Value: Customize config.
      */
     private Map<String, Config> custom = new ConcurrentHashMap<>();
 

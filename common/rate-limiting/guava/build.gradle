@@ -2,7 +2,7 @@ apply plugin: 'java-library'
 
 dependencies {
     implementation libs["slf4j"]
-    api project(":common:circuit-breaker:api")
+    implementation libs["guava"]
     api project(":common:logging")
-    api libs['sentinel']
+    api project(":common:rate-limiting:api")
 }
