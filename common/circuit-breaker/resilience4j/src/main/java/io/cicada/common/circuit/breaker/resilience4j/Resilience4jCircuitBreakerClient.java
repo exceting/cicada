@@ -4,29 +4,45 @@ import com.google.common.base.Preconditions;
 import io.cicada.common.circuit.breaker.api.CircuitBreakerConfig;
 import io.cicada.common.circuit.breaker.api.CircuitBreakerClient;
 import io.cicada.common.circuit.breaker.api.CircuitBreakerException;
+import io.cicada.common.logging.LogPrefix;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerOpenException;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class Resilience4jClient implements CircuitBreakerClient {
+public class Resilience4jCircuitBreakerClient implements CircuitBreakerClient {
 
-    private CircuitBreakerRegistry breakerRegistry;
+    private CircuitBreakerRegistry globalRegistry;
+
+    private Map<String, CircuitBreakerRegistry> breakerRegistryMap;
 
     @Override
-    public void init(CircuitBreakerConfig resilience4jProperties) {
-        Preconditions.checkNotNull(resilience4jProperties);
-        this.breakerRegistry = CircuitBreakerRegistry.of(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
+    public void init(CircuitBreakerConfig config) {
+        Preconditions.checkNotNull(config);
+        globalRegistry = CircuitBreakerRegistry.of(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
                 .enableAutomaticTransitionFromOpenToHalfOpen()
-                .failureRateThreshold(resilience4jProperties.getErrorRate())
-                .ringBufferSizeInClosedState(resilience4jProperties.getVolume())
-                .ringBufferSizeInHalfOpenState(resilience4jProperties.getHalfOpenVolume())
-                .waitDurationInOpenState(Duration.ofMillis(resilience4jProperties.getSleep()))
+                .failureRateThreshold(config.getGlobal().getErrorRate())
+                .ringBufferSizeInClosedState(config.getGlobal().getVolume())
+                .ringBufferSizeInHalfOpenState(config.getGlobal().getHalfOpenVolume())
+                .waitDurationInOpenState(Duration.ofMillis(config.getGlobal().getOpenDuration()))
                 .build());
+        if (config.getCustom() != null && config.getCustom().size() > 0) {
+            breakerRegistryMap = new HashMap<>();
+            config.getCustom().forEach((k, v) -> breakerRegistryMap.put(k,
+                    CircuitBreakerRegistry.of(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
+                            .enableAutomaticTransitionFromOpenToHalfOpen()
+                            .failureRateThreshold(v.getErrorRate())
+                            .ringBufferSizeInClosedState(v.getVolume())
+                            .ringBufferSizeInHalfOpenState(v.getHalfOpenVolume())
+                            .waitDurationInOpenState(Duration.ofMillis(v.getOpenDuration()))
+                            .build())));
+        }
     }
 
     @Override
@@ -55,9 +71,8 @@ public class Resilience4jClient implements CircuitBreakerClient {
     public <T, R> R execute(String name, Function<T, R> function, T t) throws Exception {
         Preconditions.checkNotNull(name);
         if (!allowRequest(name)) {
-            throw new CircuitBreakerException(String.format("Function named %s is broken!", name));
+            throw new CircuitBreakerException(String.format("%s Function named %s is broken!", LogPrefix.CICADA_ERROR, name));
         }
-        CircuitBreaker breaker = getBreakerByName(name);
         try {
             R r = function.apply(t);
             onSuccess(name);
@@ -108,9 +123,13 @@ public class Resilience4jClient implements CircuitBreakerClient {
     }
 
     private CircuitBreaker getBreakerByName(String name) {
-        if (breakerRegistry == null) {
-            throw new IllegalStateException("The 'Resilience4jClient' is not initialized!");
+        if (globalRegistry == null) {
+            throw new IllegalStateException(LogPrefix.CICADA_ERROR + " The 'Resilience4jCircuitBreakerClient' is not initialized!");
         }
-        return breakerRegistry.circuitBreaker(name);
+        CircuitBreakerRegistry custom;
+        if (breakerRegistryMap != null && (custom = breakerRegistryMap.get(name)) != null) {
+            return custom.circuitBreaker(name);
+        }
+        return globalRegistry.circuitBreaker(name);
     }
 }

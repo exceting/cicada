@@ -2,6 +2,4 @@ apply plugin: 'java-library'
 
 dependencies {
     implementation libs["slf4j"]
-    api project(":common:circuit-breaker:api")
-    api libs['guava']
 }

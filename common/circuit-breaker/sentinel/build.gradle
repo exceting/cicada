@@ -4,6 +4,6 @@ dependencies {
     implementation libs["slf4j"]
     api project(":common:circuit-breaker:api")
     api project(":common:logging")
-    api libs['resilience4j-breaker']
+    api libs['sentinel']
     api libs['guava']
 }
