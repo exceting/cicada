@@ -4,6 +4,7 @@ import io.cicada.common.rate.limiting.api.RateLimitingClient;
 import io.cicada.common.rate.limiting.api.RateLimitingConfig;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -11,6 +12,22 @@ public class NoopRateLimitingClient implements RateLimitingClient {
     @Override
     public void init(RateLimitingConfig config) {
         // do nothing.
+    }
+
+    @Override
+    public void register(String name, RateLimitingConfig.Config config) {
+        // do nothing.
+    }
+
+    @Override
+    public void callPermit(String name) {
+        // do nothing.
+    }
+
+    @Override
+    public boolean callPermit(String name, long time, TimeUnit timeUnit) {
+        // do nothing.
+        return true;
     }
 
     @Override
@@ -38,7 +55,7 @@ public class NoopRateLimitingClient implements RateLimitingClient {
     }
 
     @Override
-    public void refreshQpsThreshold(String name) {
+    public void refreshQpsThreshold(String name, int qpsThreshold) {
         // do nothing.
     }
 }

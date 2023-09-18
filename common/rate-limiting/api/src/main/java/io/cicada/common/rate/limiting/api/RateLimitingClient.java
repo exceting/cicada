@@ -1,6 +1,7 @@
 package io.cicada.common.rate.limiting.api;
 
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -10,6 +11,29 @@ public interface RateLimitingClient {
      * Initialize a rate limiting with its config.
      */
     void init(RateLimitingConfig config);
+
+    /**
+     * Register a new rate limiter.
+     *
+     * @param name   Resource name.
+     * @param config Resource config.
+     */
+    void register(String name, RateLimitingConfig.Config config);
+
+    /**
+     * If rate-limited, this method will be blocked.
+     */
+    void callPermit(String name);
+
+    /**
+     * If rate-limited, this method will block according to time.
+     *
+     * @param name     Resource name.
+     * @param time     Time of block, if set 0, the method will not be blocked.
+     * @param timeUnit Time unit.
+     * @return true: get permit, false: not get permit, the method is rate-limited.
+     */
+    boolean callPermit(String name, long time, TimeUnit timeUnit);
 
     /**
      * Execute for {@link Callable}
@@ -41,6 +65,6 @@ public interface RateLimitingClient {
      * Refresh qps threshold.
      * When implementing distributed rate limiting, it may be necessary to dynamically adjust the QPS threshold.
      */
-    void refreshQpsThreshold(String name);
+    void refreshQpsThreshold(String name, int qpsThreshold);
 
 }
