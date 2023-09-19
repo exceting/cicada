@@ -92,6 +92,7 @@ ext {
 
             // Others
             'resilience4j-breaker'              : "io.github.resilience4j:resilience4j-circuitbreaker:${versions['resilience4j']}",
+            'resilience4j-ratelimiter'          : "io.github.resilience4j:resilience4j-ratelimiter:${versions['resilience4j']}",
             'sentinel'                          : "com.alibaba.csp:sentinel-core:${versions['sentinel']}",
             'guava'                             : "com.google.guava:guava:${versions['guava']}",
             'retry'                             : "com.github.rholder:guava-retrying:${versions['retry']}",

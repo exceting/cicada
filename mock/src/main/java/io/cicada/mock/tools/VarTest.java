@@ -4,6 +4,7 @@ import io.cicada.tools.logtrace.annos.MethodLog;
 import io.cicada.tools.logtrace.annos.Slf4jCheck;
 import io.cicada.tools.logtrace.annos.VarLog;
 
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Consumer;
 
 @Slf4jCheck
@@ -11,6 +12,8 @@ public class VarTest {
 
     @MethodLog(exceptionLog = true, noThrow = false, dur = true)
     public static void main(String[] args) {
+
+        System.out.println("=======   " + String.valueOf(ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE)));
 
         @VarLog(dur = true)
         int a = 1;

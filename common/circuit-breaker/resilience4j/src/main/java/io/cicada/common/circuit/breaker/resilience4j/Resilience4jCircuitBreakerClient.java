@@ -124,7 +124,7 @@ public class Resilience4jCircuitBreakerClient implements CircuitBreakerClient {
 
     private CircuitBreaker getBreakerByName(String name) {
         if (globalRegistry == null) {
-            throw new IllegalStateException(LogPrefix.CICADA_ERROR + " The 'Resilience4jCircuitBreakerClient' is not initialized!");
+            throw new IllegalStateException(String.format("%s The 'Resilience4jCircuitBreakerClient' is not initialized!", LogPrefix.CICADA_ERROR));
         }
         CircuitBreakerRegistry custom;
         if (breakerRegistryMap != null && (custom = breakerRegistryMap.get(name)) != null) {

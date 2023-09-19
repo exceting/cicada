@@ -2,6 +2,7 @@ package io.cicada.common.rate.limiting.guava;
 
 import com.google.common.collect.Maps;
 import com.google.common.util.concurrent.RateLimiter;
+import io.cicada.common.logging.LogPrefix;
 import io.cicada.common.rate.limiting.api.RateLimitingClient;
 import io.cicada.common.rate.limiting.api.RateLimitingConfig;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class GuavaRateLimitingClient implements RateLimitingClient {
         if ((rateLimiter = limiterMap.get(name)) != null) {
             return time <= 0 ? rateLimiter.tryAcquire() : rateLimiter.tryAcquire(time, timeUnit);
         } else {
-            log.warn("Can't find any rate limiter of {}!", name);
+            log.warn("{} Can't find any rate limiter of {}!", LogPrefix.CICADA_WARN, name);
         }
         return false;
     }
@@ -85,7 +86,7 @@ public class GuavaRateLimitingClient implements RateLimitingClient {
         if ((rateLimiter = limiterMap.get(name)) != null) {
             rateLimiter.acquire();
         } else {
-            log.warn("Can't find any rate limiter of {}!", name);
+            log.warn("{} Can't find any rate limiter of {}!", LogPrefix.CICADA_WARN, name);
         }
     }
 }

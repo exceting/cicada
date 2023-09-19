@@ -165,7 +165,7 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
 
     private void checkRules(String name) {
         if (config == null || allRule == null) {
-            throw new IllegalStateException(LogPrefix.CICADA_ERROR + " The 'SentinelCircuitBreakerClient' is not initialized!");
+            throw new IllegalStateException(String.format("%s The 'SentinelCircuitBreakerClient' is not initialized!", LogPrefix.CICADA_ERROR));
         }
         if (allRule.get(name) == null) {
             synchronized (this) {
