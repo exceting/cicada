@@ -89,6 +89,8 @@ configure(subprojects) { subProject ->
 
         pluginManager.withPlugin('maven-publish', {
 
+            apply plugin: 'signing'
+
             publishing {
                 repositories {
                     maven {
@@ -98,6 +100,10 @@ configure(subprojects) { subProject ->
                             password = repoPassword
                         }
                     }
+                }
+
+                signing {
+                    sign configurations.archives
                 }
 
                 publications {

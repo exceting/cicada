@@ -3,6 +3,6 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <bean id="student" name="student22" class="io.cicada.spring.demo.Student"/>
+    <bean id="student" name="student22" class="io.github.exceting.cicada.spring.demo.Student"/>
 
 </beans>
