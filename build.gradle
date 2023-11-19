@@ -63,16 +63,25 @@ configure(subprojects) { subProject ->
             }
         }
 
-        task sourcesJar(type: Jar, dependsOn: classes) {
+        jar {
+            enabled = true
+        }
+
+        task sourcesJar(type: Jar) {
+            from sourceSets.main.allJava
+            archiveClassifier = 'sources'
+        }
+
+        /*task sourcesJar(type: Jar, dependsOn: classes) {
             group = LifecycleBasePlugin.BUILD_GROUP
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
             archiveClassifier.set('sources')
             archiveBaseName.set(project.artifactId)
-        }
+        }*/
     })
 
-    def isMock = subProject.name.startsWith("mock")
-    if (!isMock) {
+    def canPublish = subProject.name.startsWith("logtrace")
+    if (canPublish) {
         pluginManager.withPlugin('java-library', {
             //apply maven plugin
             apply plugin: 'maven-publish'
@@ -86,6 +95,8 @@ configure(subprojects) { subProject ->
             //apply maven plugin
             apply plugin: 'maven-publish'
         })
+
+        group = 'io.github.exceting'
 
         pluginManager.withPlugin('maven-publish', {
 
