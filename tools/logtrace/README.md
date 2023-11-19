@@ -321,7 +321,4 @@ java: java.lang.ClassCastException: class com.sun.proxy.$Proxy15 cannot be cast 
 解决：点开IDEA的settings选项，在弹出窗口找到如下位置
 ![日志格式](https://raw.githubusercontent.com/exceting/OSSRH-96790/main/cicada-tools/log-trace/log-trace-05.png)
 
-将`-Djps.track.ap.dependencies`填入上图指定位置。
-### 为什么不用Arthas排查这类问题?
-Arthas和LogTrace不是一个维度的东西，Arthas是在运行期改变原有逻辑并监听执行结果，需要安装、打指令、观察等一系列操作，使用门槛较高；
-<br/>LogTrace更像lombok，简单易用，在编译期就帮你做好所有事情，lombok可以帮你生成set、get方法，LogTrace可以帮你生成业务日志，当然，它们配合使用会得到更好的表现: 如利用lombok生成toString方法，logTrace打印时就会输出对象的全信息。
+将`-Djps.track.ap.dependencies`填入上图指定位置即可解决。
