@@ -1,7 +1,7 @@
 ## LogTrace 使用指南
 > 建议使用gradle作为项目管理工具，下面是一些建议的版本号：<br/>
-> <img src="https://img.shields.io/badge/jdk-8%20%7C%209%20%7C%2010%20%7C%2011-orange.svg"> <img src="https://img.shields.io/badge/LogTrace-v0.0.1%20SNAPSHOT-blue.svg">
-> <img src="https://img.shields.io/badge/gradle-7+-green.svg">
+> <img src="https://img.shields.io/badge/jdk-8%20%7C%209%20%7C%2010%20%7C%2011-orange.svg">
+> <img src="https://img.shields.io/badge/gradle-7+-green.svg"> <img src="https://img.shields.io/badge/LogTrace-v0.0.1%20SNAPSHOT-blue.svg">
 
 ### Part1: 解决的问题
 本产品尝试解决以下场景的问题：假设现在有一块依赖了很多上下游服务的代码，且上下游的返回决定了它的逻辑走向，其中弯弯绕绕的if-else一大堆，除了没写注释外，还没有打印任何日志，举个例子：
