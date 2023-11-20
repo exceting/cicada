@@ -1,10 +1,10 @@
 ## LogTrace 使用指南
-> 建议使用gradle作为项目管理工具
-
-@[toc]
+> 建议使用gradle作为项目管理工具，下面是一些建议的版本号：<br/>
+> <img src="https://img.shields.io/badge/jdk-8%20%7C%209%20%7C%2010%20%7C%2011-orange.svg"> <img src="https://img.shields.io/badge/LogTrace-v0.0.1%20SNAPSHOT-blue.svg">
+> <img src="https://img.shields.io/badge/gradle-7+-green.svg">
 
 ### Part1: 解决的问题
-本产品尝试解决以下场景的问题：一块依赖了许多上下游服务的代码，且上下游的返回决定了它的逻辑走向，其中弯弯绕绕的if-else一大堆，除了没写注释外，还没有打印任何日志...
+本产品尝试解决以下场景的问题：假设现在有一块依赖了很多上下游服务的代码，且上下游的返回决定了它的逻辑走向，其中弯弯绕绕的if-else一大堆，除了没写注释外，还没有打印任何日志，举个例子：
 ```java {.line-numbers}
 public Student complexScene(String... args) {
     if(args == null || args.length == 0) {
@@ -26,11 +26,11 @@ public Student complexScene(String... args) {
     return null;
 }
 ```
-以上述代码为例，它有3种逻辑走向会返回null，假如现在这块逻辑在生产环境突然返回null，不符合预期，需要排查问题，你会怎么做? 
+这段代码中有3种逻辑走向会返回null，假如现在这块逻辑在生产环境突然返回了不符合预期的结果（比如应该返回student，却返回了null），需要排查问题，你会怎么做? 
 
-此刻你或许会想到利用「可观测系统」进行一系列分析，最终得出结论，但很遗憾，这只适用于上下游服务异常的情况(IO错误)，像上面这种由对方返回了不符合预期的数据导致的问题是无法排查的。
+此刻你或许会想到利用`可观测系统`（即监控+日志+链路追踪系统）进行一系列分析，最终得出结论，遗憾的是这只适用于上下游服务异常的情况(IO错误)，像上面这种情况各方调用都是正常的，仅仅是返回了不符合预期的结果而已，所以可观测系统在这种场景下就显得力不从心了。
 
-解决这类问题，最直接的方式就是像这样给每个影响逻辑走势的地方打上追踪日志：
+排查这类问题，最简单的方式就是给每个影响逻辑走向的地方打上追踪日志：
 ```java {.line-numbers}
 public Student complexScene(String... args) {
     if(args == null || args.length == 0) {
@@ -55,13 +55,13 @@ public Student complexScene(String... args) {
     return null;
 }
 ```
-这样不管从哪里返回null，都可以通过日志分析出逻辑走向。
+这样就可以通过日志系统分析出逻辑走向。
 
 这只是个简单的例子，在实际开发中往往有巨复杂的逻辑，最典型的就是网关接口，内部可能聚合了高达十几个rpc服务的返回值，中间产生的条件判断逻辑更是数不胜数，
 像这种场景一旦返回了不符合预期的结果，如果没有追踪日志排查起来将会极其痛苦。
 
 虽然通过追踪日志很容易排查出问题所在，但打印这些日志是麻烦的，你要考虑在哪里打，输出哪些数据，格式应该怎样，如何避免打印无意义的日志。
-<br/>LogTrace就是用来解决这种问题的，它会`自动解析语法树`，在会影响逻辑走向的地方`自动植入`风格统一的追踪日志，下面来看看它具体的用法。
+<br/>LogTrace就是用来解决这些问题的，它会`自动解析语法树`，在影响逻辑走向的地方`自动植入`风格统一的追踪日志，下面来看看它具体的用法。
 ### Part2: 导包
 LogTrace可以自动附加`有意义`且`风格统一`的业务追踪日志，而且它像lombok一样简单易用。
 
@@ -70,6 +70,11 @@ LogTrace可以自动附加`有意义`且`风格统一`的业务追踪日志，�
 > <br/>slf4j和logback是必须的，如果你项目中已经引入了，就不用再引了
 > <br/>除了logback，引入别的slf4j标准实现也可以，如log4j
 
+gradle：
+```groovy
+compileOnly 'io.github.exceting:log-trace:0.0.1-SNAPSHOT'
+annotationProcessor 'io.github.exceting:log-trace:0.0.1-SNAPSHOT'
+```
 maven：
 ```xml
 <dependencies>
@@ -106,38 +111,34 @@ maven：
     </plugins>
 </build>
 ```
+现在的包是snapshot版本（正式版需要进行更多的测试case后才能发布），所以要把sonatype的snapshot仓库依赖加进来：
+<br/>
 gradle：
 ```groovy
-compileOnly 'io.github.exceting:log-trace:0.0.1-SNAPSHOT'
-annotationProcessor 'io.github.exceting:log-trace:0.0.1-SNAPSHOT'
+//将snapshot仓库加到repositories里
+maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
 ```
-如你所见，现在的包是snapshot版本，所以要把sonatype的snapshot仓库依赖加进来：
-<br/>
 maven：
 ```xml
+<!-- 将snapshot仓库加到<repositories>里-->
 <repository>
     <id>snapshots</id>
     <name>sonatype snapshot</name>
     <url>https://s01.oss.sonatype.org/content/repositories/snapshots/</url>
 </repository>
 ```
-gradle：
-```groovy
-//放到repositories里面
-maven { url "https://s01.oss.sonatype.org/content/repositories/snapshots/" }
-```
 ### Part3: 快速开始
 确定jar包和仓库已经配好后开始快速使用，首先在测试类上加`@Slf4jCheck`注解
 ![@Slf4j注解](https://raw.githubusercontent.com/exceting/OSSRH-96790/main/cicada-tools/log-trace/log-trace-01.png)
 
-然后在需要被追踪的方法上加@MethodLog注解:
+然后在需要被追踪的方法上加@MethodLog注解，运行效果如图:
 ![@MethodLog注解](https://raw.githubusercontent.com/exceting/OSSRH-96790/main/cicada-tools/log-trace/log-trace-02.png)
-运行结果如图。
 ### Part4: 格式&基本原理
 通过LogTrace植入的追踪日志统一格式如下：
 ![日志格式](https://raw.githubusercontent.com/exceting/OSSRH-96790/main/cicada-tools/log-trace/log-trace-03.png)
-LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通过对应的注解增强原有代码，即在编译器修改源代码的方式实现，
+LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通过对应的注解增强原有代码，即在`编译期`修改源代码的方式实现，
 [参考这里](https://exceting.github.io/2021/02/08/%E6%8F%92%E5%85%A5%E5%BC%8F%E6%B3%A8%E8%A7%A3%E5%A4%84%E7%90%86%E5%99%A8%E7%9A%84%E4%B8%80%E6%AC%A1%E4%BD%BF%E7%94%A8%E7%BB%8F%E5%8E%86/)
+，它是对java源代码的增强，除此之外还有增强字节码的技术，如asm和javassist。
 ### Part5: 注解&用法
 #### @Slf4jCheck
 每个需要打追踪日志的类上都应该加上这个注解，加上此注解后，类内会自动创建一个Slf4j的Logger对象，作用等同于lombok的`@Slf4j`且兼容lombok。
