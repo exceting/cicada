@@ -1,5 +1,5 @@
 # cicada
-<img src="https://raw.githubusercontent.com/exceting/OSSRH-96790/main/cicada-tools/log-trace/cicada-logo_00000.png">
+<img src="https://raw.githubusercontent.com/exceting/OSSRH-96790/main/cicada-tools/log-trace/cicada-logo_00000.png" width="256px"/>
 
 java微服务脚手架，施工中...
 
