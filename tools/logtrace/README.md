@@ -1,8 +1,11 @@
 ## LogTrace 使用指南
-> ⚠️ 建议使用gradle作为项目管理工具
+> 建议使用gradle作为项目管理工具
+
+@[toc]
+
 ### Part1: 解决的问题
 本产品尝试解决以下场景的问题：一块依赖了许多上下游服务的代码，且上下游的返回决定了它的逻辑走向，其中弯弯绕绕的if-else一大堆，除了没写注释外，还没有打印任何日志...
-```java
+```java {.line-numbers}
 public Student complexScene(String... args) {
     if(args == null || args.length == 0) {
         return null;
@@ -28,7 +31,7 @@ public Student complexScene(String... args) {
 此刻你或许会想到利用「可观测系统」进行一系列分析，最终得出结论，但很遗憾，这只适用于上下游服务异常的情况(IO错误)，像上面这种由对方返回了不符合预期的数据导致的问题是无法排查的。
 
 解决这类问题，最直接的方式就是像这样给每个影响逻辑走势的地方打上追踪日志：
-```java
+```java {.line-numbers}
 public Student complexScene(String... args) {
     if(args == null || args.length == 0) {
         log.debug("args == null or length == 0 is true! args={}", args); //逻辑追踪日志
@@ -148,7 +151,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
 * isOpen：默认为空，作用跟`@Slf4jCheck`里的isOpen一样，但优先级更高，仅对当前方法生效。
 * traceLevel：默认为Level.DEBUG，可通过此项定制追踪日志的级别。
 * exceptionLog：是否打印方法异常信息，为true时开启，默认false，它的增强效果如下：
-  * ```java
+  * ```java {.line-numbers}
     // 编译前
     @MethodLog(exceptionLog = true)
     void methodTest() {
@@ -168,7 +171,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
     }
     ```
 * noThrow：需要和`exceptionLog`搭配使用，当它的值为true时，则只catch异常，不抛出异常，默认false，它的增强效果如下：
-  * ```java
+  * ```java {.line-numbers}
     // 编译前
     @MethodLog(exceptionLog = true, noThrow = true)
     void methodTest() {
@@ -187,7 +190,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
     }
     ```
 * dur：是否打印方法耗时？为true时开启，默认false，开启后的增强逻辑如下：
-  * ```java
+  * ```java {.line-numbers}
     // 编译前
     @methodTest(dur = true)
     void methodTest() {
@@ -208,7 +211,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
     }
     ```
 * onlyVar：是否只打印变量追踪日志？默认false，为false时，那些加了`@MethodLog`的方法，会在所有**影响逻辑走势**的地方都加上追踪日志(即方法内任意地方的任意if、if-else，switch-case语句)，增强效果如下：
-  * ```java
+  * ```java {.line-numbers}
     // 编译前
     @MethodLog
     void methodTest() {
@@ -236,7 +239,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
     如果onlyVar为true，这些日志将不再打印，这时就只会打印方法体中被`@VarLog`标注的局部变量日志(@VarLog后面会介绍)。<br/>如果你认为不需要那么详细的追踪日志，可以利用此项放弃这些日志。
 #### @VarLog
 对于方法体中局部变量的追踪，如果你要对方法体中某个局部变量感兴趣，可以在其声明的位置打上这个注解，之后这个变量的值会被追踪，增强过程如下：
-```java
+```java {.line-numbers}
 // 编译前
 @MethodLog
 void methodTest() {
@@ -259,7 +262,7 @@ void methodTest() {
 对于复杂场景，你可以利用这个注解灵活的追踪任意变量，记录变量被赋予的所有值。
 #### @Ban
 所有追踪日志在打印时，会无脑打印方法的入参，如果你不需要某个参数被打印，就给它加上这个注解：
-```java
+```java {.line-numbers}
 // 编译前
 @MethodLog
 void methodTest(int a, @Ban int b, int c) { //禁止打印参数b
@@ -279,20 +282,20 @@ void methodTest(int a, int b, int c) {
     }
 }
 ```
-### Part6: 自定义开关
-非常自由的开关定制方式，在@Slf4jCheck和@MethodLog里面通过isOpen控制日志是否输出，默认输出，MethodLog优先级更高。
+### Part6: 自定义日志开关
+LogTrace提供非常灵活的开关定制方式，在`@Slf4jCheck`和`@MethodLog`里面通过isOpen属性控制日志是否输出，默认输出，`@MethodLog`优先级更高。
 
 定制开关: 在任意类里定义一个开关，这个开关必须是static、final的AtomicBoolean对象：
 ```java
 public static final AtomicBoolean isOpen = new AtomicBoolean(true)
 ```
-利用`全限定名#常量名`的方式引入给isOpen属性：
+利用`全限定名#开关名`的格式给isOpen属性赋值：
 ```java
 @Slf4jCheck(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 @MethodLog(isOpen = "io.cicada.mock.tools.config.Test#isOpen")
 ```
-剩下的事情就很简单了，你可以写个定时器，定时从配置系统中获取具体的开关值，来刷新这个对象的值(只刷值，千万不要改引用指针!!)，从而控制日志的是否输出：
-```java
+剩下的事情就很简单了，你可以写个定时任务定时从`配置系统`中获取具体的开关值，来刷新这个对象的值(注意刷新的时候只刷值，不要改开关的引用指针!)，从而利用配置系统灵活控制日志的输出：
+```java {.line-numbers}
 @Component
 public class OffOnTest {
     
