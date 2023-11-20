@@ -151,7 +151,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
 * traceLevel：默认为Level.DEBUG，可通过此项定制追踪日志的级别。
 * exceptionLog：是否打印方法异常信息，为true时开启，默认false，它的增强效果如下：
   * ```java {.line-numbers}
-    // 编译前
+    // 原始代码
     @MethodLog(exceptionLog = true)
     void methodTest() {
         // 方法体省略...
@@ -170,7 +170,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
     ```
 * noThrow：需要和`exceptionLog`搭配使用，当它的值为true时，则只catch异常，不抛出异常，默认false，它的增强效果如下：
   * ```java {.line-numbers}
-    // 编译前
+    // 原始代码
     @MethodLog(exceptionLog = true, noThrow = true)
     void methodTest() {
         // 方法体省略...
@@ -188,7 +188,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
     ```
 * dur：是否打印方法耗时？为true时开启，默认false，开启后的增强逻辑如下：
   * ```java {.line-numbers}
-    // 编译前
+    // 原始代码
     @methodTest(dur = true)
     void methodTest() {
       // 方法体省略...
@@ -208,7 +208,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
     ```
 * onlyVar：是否只打印变量追踪日志？默认false，为false时，那些加了`@MethodLog`的方法，会在所有**影响逻辑走势**的地方都加上追踪日志(即方法内任意地方的任意if、if-else，switch-case语句)，增强效果如下：
   * ```java {.line-numbers}
-    // 编译前
+    // 原始代码
     @MethodLog
     void methodTest() {
       int a = 2;
@@ -235,7 +235,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
 #### @VarLog
 对于方法体中局部变量的追踪，如果你要对方法体中某个局部变量感兴趣，可以在其声明的位置打上这个注解，之后这个变量的值会被追踪，增强过程如下：
 ```java {.line-numbers}
-// 编译前
+// 原始代码
 @MethodLog
 void methodTest() {
     @VarLog //利用@VarLog追踪局部变量a
@@ -257,7 +257,7 @@ void methodTest() {
 #### @Ban
 所有追踪日志在打印时，会无脑打印方法的入参，如果你不需要某个参数被打印，就给它加上这个注解：
 ```java {.line-numbers}
-// 编译前
+// 原始代码
 @MethodLog
 void methodTest(int a, @Ban int b, int c) { //禁止打印参数b
     if(a == 1){
