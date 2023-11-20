@@ -157,7 +157,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
         // 方法体省略...
     }
     
-    // ⬇⬇ 编译期被LogTrace增强后的代码
+    // ⬇⬇ 被LogTrace增强后的代码
 
     void methodTest() {
         try {
@@ -176,7 +176,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
         // 方法体省略...
     }
     
-    // ⬇⬇ 编译期被LogTrace增强后的代码
+    // ⬇⬇ 被LogTrace增强后的代码
     
     void methodTest() {
       try {
@@ -194,7 +194,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
       // 方法体省略...
     }
     
-    // ⬇⬇ 编译期被LogTrace增强后的代码
+    // ⬇⬇ 被LogTrace增强后的代码
     
     void methodTest() {
       // 植入的计数变量会加个UUID后缀，防止局部变量冲突
@@ -218,7 +218,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
         // 条件2命中
     }
     
-    // ⬇⬇ 编译期被LogTrace增强后的代码
+    // ⬇⬇ 被LogTrace增强后的代码
     
     void methodTest() {
         int a = 2;
@@ -243,7 +243,7 @@ void methodTest() {
     a=5;
 }
 
-// ⬇⬇ 编译期被LogTrace增强后的代码
+// ⬇⬇ 被LogTrace增强后的代码
 
 void methodTest() {
     int a = getA(); //⬇追踪后会打印a的值
@@ -265,7 +265,7 @@ void methodTest(int a, @Ban int b, int c) { //禁止打印参数b
     }
 }
 
-// ⬇⬇ 编译期被LogTrace增强后的代码
+// ⬇⬇ 被LogTrace增强后的代码
 
 void methodTest(int a, int b, int c) {
     Object final_c = c;
