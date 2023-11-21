@@ -70,6 +70,8 @@ public Student complexScene(String... args) {
 
 gradle：
 ```groovy
+implementation 'org.slf4j:slf4j-api:1.7.7'
+implementation 'ch.qos.logback:logback-classic:1.2.9'
 compileOnly 'io.github.exceting:log-trace:0.0.1-SNAPSHOT'
 annotationProcessor 'io.github.exceting:log-trace:0.0.1-SNAPSHOT'
 ```
