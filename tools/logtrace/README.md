@@ -192,7 +192,7 @@ LogTrace的工作原理与lombok一致，都是在编译期解析语法树，通
 * dur：是否打印方法耗时？为true时开启，默认false，开启后的增强逻辑如下：
   * ```java {.line-numbers}
     // 原始代码
-    @methodTest(dur = true)
+    @MethodLog(dur = true)
     void methodTest() {
       // 方法体省略...
     }
