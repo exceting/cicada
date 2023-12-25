@@ -128,7 +128,7 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
 
     @Override
     public void reset(String name) {
-        log.warn("{} Sorry 'SentinelCircuitBreakerClient' not support reset metrics.", LogPrefix.CICADA_WARN);
+        log.warn("{} SentinelCircuitBreakerClient not support reset metrics.", LogPrefix.CICADA_WARN);
         // Not support.
     }
 
@@ -165,7 +165,7 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
 
     private void checkRules(String name) {
         if (config == null || allRule == null) {
-            throw new IllegalStateException(String.format("%s The 'SentinelCircuitBreakerClient' is not initialized!", LogPrefix.CICADA_ERROR));
+            throw new IllegalStateException(String.format("%s The SentinelCircuitBreakerClient is not initialized!", LogPrefix.CICADA_ERROR));
         }
         if (allRule.get(name) == null) {
             synchronized (this) {
