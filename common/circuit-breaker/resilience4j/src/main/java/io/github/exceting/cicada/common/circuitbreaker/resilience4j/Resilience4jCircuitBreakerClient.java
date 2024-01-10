@@ -32,7 +32,7 @@ public class Resilience4jCircuitBreakerClient implements CircuitBreakerClient {
                 .ringBufferSizeInHalfOpenState(config.getGlobal().getHalfOpenVolume())
                 .waitDurationInOpenState(Duration.ofMillis(config.getGlobal().getOpenDuration()))
                 .build());
-        if (config.getCustom() != null && config.getCustom().size() > 0) {
+        if (config.getCustom() != null && !config.getCustom().isEmpty()) {
             breakerRegistryMap = new HashMap<>();
             config.getCustom().forEach((k, v) -> breakerRegistryMap.put(k,
                     CircuitBreakerRegistry.of(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
