@@ -1,4 +1,4 @@
-# Cicada
+# Cicada脚手架
 <img src="https://raw.githubusercontent.com/exceting/OSSRH-96790/main/cicada-tools/log-trace/cicada-logo_00000.png" width="456px"/>
 
 *java微服务脚手架，施工中...*
