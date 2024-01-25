@@ -1,5 +1,7 @@
 package io.github.exceting.cicada.common.ratelimiting.resilience4j;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingClient;
 import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingConfig;
 import io.github.resilience4j.ratelimiter.RateLimiter;
@@ -7,36 +9,65 @@ import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Resilience4jRateLimitingClient implements RateLimitingClient {
 
-    private Map<String, RateLimiter> limiterMap;
+    private final Map<String, RateLimiter> limiterMap = Maps.newHashMap();
+
+    private final Lock lock = new ReentrantLock();
 
     @Override
-    public void init(RateLimitingConfig config) {
-        if (config == null || config.getConfigMap() == null || config.getConfigMap().size() == 0) {
-            throw new IllegalArgumentException("Can't find any rate limiter config!");
+    public void rateLimitingConfig(Map<String, RateLimitingConfig.Config> configMap) {
+        lock.lock();
+        try {
+            Set<String> needClean;
+            if (configMap == null || configMap.isEmpty()) {
+                needClean = limiterMap.keySet();
+            } else {
+                needClean = Sets.newHashSet();
+                this.limiterMap.keySet().forEach(k -> {
+                    if (!configMap.containsKey(k)) {
+                        needClean.add(k);
+                    }
+                });
+                configMap.forEach(this::register);
+            }
+            needClean.forEach(this::unregister);
+
+        } finally {
+            lock.unlock();
         }
-        this.limiterMap = new ConcurrentHashMap<>();
-        config.getConfigMap().forEach((k, v) -> limiterMap.put(k, RateLimiter.of(k, RateLimiterConfig.custom()
-                .limitRefreshPeriod(Duration.ofSeconds(1))
-                .limitForPeriod(v.getQpsThreshold())
-                .timeoutDuration(Duration.ofSeconds(0))
-                .build())));
     }
 
     @Override
     public void register(String name, RateLimitingConfig.Config config) {
-        limiterMap.put(name, RateLimiter.of(name, RateLimiterConfig.custom()
-                .limitRefreshPeriod(Duration.ofSeconds(1))
-                .limitForPeriod(config.getQpsThreshold())
-                .timeoutDuration(Duration.ofSeconds(0))
-                .build()));
+        lock.lock();
+        try {
+            limiterMap.put(name, RateLimiter.of(name, RateLimiterConfig.custom()
+                    .limitRefreshPeriod(Duration.ofSeconds(1))
+                    .limitForPeriod(config.getQpsThreshold())
+                    .timeoutDuration(Duration.ofSeconds(0))
+                    .build()));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void unregister(String name) {
+        lock.lock();
+        try {
+            limiterMap.remove(name);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override

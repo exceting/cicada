@@ -1,5 +1,6 @@
 package io.github.exceting.cicada.common.circuitbreaker.api;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -10,9 +11,16 @@ import java.util.function.Supplier;
 public interface CircuitBreakerClient {
 
     /**
-     * Initialize a circuit breaker with its config.
+     * Global circuit breaker config, enable when a method doesn't customize its own config.
      */
-    void init(CircuitBreakerConfig config);
+    void globalConfig(Config config);
+
+    /**
+     * You can customize circuit breaker configs for some target methods.
+     * Key: Method name.
+     * Value: Customize config.
+     */
+    void customConfig(Map<String, Config> custom);
 
     /**
      * Execute for {@link Callable}

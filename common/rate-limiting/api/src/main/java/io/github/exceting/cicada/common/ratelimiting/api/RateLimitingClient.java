@@ -1,5 +1,6 @@
 package io.github.exceting.cicada.common.ratelimiting.api;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -7,10 +8,7 @@ import java.util.function.Supplier;
 
 public interface RateLimitingClient {
 
-    /**
-     * Initialize a rate limiting with its config.
-     */
-    void init(RateLimitingConfig config);
+    void rateLimitingConfig(Map<String, RateLimitingConfig.Config> configMap);
 
     /**
      * Register a new rate limiter.
@@ -19,6 +17,13 @@ public interface RateLimitingClient {
      * @param config Resource config.
      */
     void register(String name, RateLimitingConfig.Config config);
+
+    /**
+     * Unregister a new rate limiter.
+     *
+     * @param name Resource name.
+     */
+    void unregister(String name);
 
     /**
      * If rate-limited, this method will be blocked.

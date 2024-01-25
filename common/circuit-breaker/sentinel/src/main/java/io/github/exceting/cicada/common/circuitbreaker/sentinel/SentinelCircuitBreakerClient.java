@@ -4,35 +4,73 @@ import com.alibaba.csp.sentinel.Entry;
 import com.alibaba.csp.sentinel.SphU;
 import com.alibaba.csp.sentinel.Tracer;
 import com.alibaba.csp.sentinel.slots.block.BlockException;
-import com.alibaba.csp.sentinel.slots.block.Rule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRule;
 import com.alibaba.csp.sentinel.slots.block.degrade.DegradeRuleManager;
 import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.CircuitBreakerStrategy;
+import com.google.common.collect.Sets;
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerClient;
-import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerConfig;
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerException;
+import io.github.exceting.cicada.common.circuitbreaker.api.Config;
+import io.github.exceting.cicada.common.logging.LogFormat;
 import io.github.exceting.cicada.common.logging.LogPrefix;
-import lombok.extern.slf4j.Slf4j;
+import io.github.exceting.cicada.common.logging.LoggerAdapter;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-@Slf4j
 public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
 
-    private CircuitBreakerConfig config;
+    private static final Logger log = new LoggerAdapter(SentinelCircuitBreakerClient.class);
 
-    private Map<String, Rule> allRule;
+    private final Lock lock = new ReentrantLock();
 
+    private Config globalConfig = new Config();
+
+    private Map<String, Config> customConfig = null;
+
+    private final Set<String> loaded = Sets.newHashSet();
+
+    /**
+     * Init or refresh global config.
+     *
+     * @param config new config.
+     */
     @Override
-    public void init(CircuitBreakerConfig config) {
-        this.config = config;
-        this.allRule = new ConcurrentHashMap<>();
+    public void globalConfig(Config config) {
+        lock.lock();
+        try {
+            this.globalConfig = config;
+            if (config == null) {
+                throw new IllegalArgumentException("Circuit breaker client global config is null!");
+            }
+            reload();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    /**
+     * Init or refresh custom config.
+     *
+     * @param custom new custom configs.
+     */
+    @Override
+    public synchronized void customConfig(Map<String, Config> custom) {
+        lock.lock();
+        try {
+            this.customConfig = custom;
+            reload();
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -128,7 +166,7 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
 
     @Override
     public void reset(String name) {
-        log.warn("{} SentinelCircuitBreakerClient not support reset metrics.", LogPrefix.CICADA_WARN);
+        log.warn("SentinelCircuitBreakerClient not support reset metrics.");
         // Not support.
     }
 
@@ -141,7 +179,7 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
                 Tracer.trace(t);
             }
         } catch (BlockException e) {
-            log.warn("{} The method named {} is already broken! onError is meaningless!", LogPrefix.CICADA_WARN, name, e);
+            log.warn("The method named {} is already broken! onError is meaningless!", name, e);
         } finally {
             if (entry != null) {
                 entry.exit();
@@ -155,7 +193,7 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
         try {
             entry = SphU.entry(name);
         } catch (BlockException e) {
-            log.warn("{} The method named {} is already broken! onSuccess is meaningless!", LogPrefix.CICADA_WARN, name, e);
+            log.warn("The method named {} is already broken! onSuccess is meaningless!", name, e);
         } finally {
             if (entry != null) {
                 entry.exit();
@@ -163,16 +201,29 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
         }
     }
 
-    private void checkRules(String name) {
-        if (config == null || allRule == null) {
-            throw new IllegalStateException(String.format("%s The SentinelCircuitBreakerClient is not initialized!", LogPrefix.CICADA_ERROR));
+    private void reload() {
+        if (globalConfig == null) {
+            throw new IllegalStateException(LogFormat.error("The SentinelCircuitBreakerClient is not initialized!"));
         }
-        if (allRule.get(name) == null) {
-            synchronized (this) {
-                if (allRule.get(name) == null) { // Double check.
-                    CircuitBreakerConfig.Config c;
-                    if (config.getCustom() == null || (c = config.getCustom().get(name)) == null) {
-                        c = config.getGlobal();
+        lock.lock();
+        try {
+            loaded.clear();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void checkRules(String name) {
+        if (globalConfig == null) {
+            throw new IllegalStateException(LogFormat.error("The SentinelCircuitBreakerClient is not initialized!"));
+        }
+        if (!loaded.contains(name)) {
+            lock.lock();
+            try {
+                if (!loaded.contains(name)) { // Double check.
+                    Config c;
+                    if (customConfig == null || (c = customConfig.get(name)) == null) {
+                        c = globalConfig;
                     }
                     DegradeRule r = new DegradeRule(name)
                             .setGrade(CircuitBreakerStrategy.ERROR_RATIO.getType())
@@ -182,8 +233,10 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
                     List<DegradeRule> rs = new ArrayList<>();
                     rs.add(r);
                     DegradeRuleManager.loadRules(rs); // Load rule for current name.
-                    allRule.put(name, r);
+                    loaded.add(name);
                 }
+            } finally {
+                lock.unlock();
             }
         }
     }

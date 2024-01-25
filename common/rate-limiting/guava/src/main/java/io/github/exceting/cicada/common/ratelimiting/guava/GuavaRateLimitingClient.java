@@ -1,36 +1,71 @@
 package io.github.exceting.cicada.common.ratelimiting.guava;
 
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.RateLimiter;
-import io.github.exceting.cicada.common.logging.LogPrefix;
+import io.github.exceting.cicada.common.logging.LoggerAdapter;
 import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingClient;
 import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingConfig;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-@Slf4j
 public class GuavaRateLimitingClient implements RateLimitingClient {
 
-    private Map<String, RateLimiter> limiterMap;
+    private static final Logger log = new LoggerAdapter(GuavaRateLimitingClient.class);
 
+    private final Map<String, RateLimiter> limiterMap = Maps.newHashMap();
+
+    private final Lock lock = new ReentrantLock();
 
     @Override
-    public void init(RateLimitingConfig config) {
-        if (config == null || config.getConfigMap() == null || config.getConfigMap().size() == 0) {
-            throw new IllegalArgumentException("Can't find any rate limiter config!");
+    public void rateLimitingConfig(Map<String, RateLimitingConfig.Config> configMap) {
+        lock.lock();
+        try {
+            Set<String> needClean;
+            if (configMap == null || configMap.isEmpty()) {
+                needClean = limiterMap.keySet();
+            } else {
+                needClean = Sets.newHashSet();
+                this.limiterMap.keySet().forEach(k -> {
+                    if (!configMap.containsKey(k)) {
+                        needClean.add(k);
+                    }
+                });
+                configMap.forEach(this::register);
+            }
+            needClean.forEach(this::unregister);
+
+        } finally {
+            lock.unlock();
         }
-        this.limiterMap = Maps.newConcurrentMap();
-        config.getConfigMap().forEach((k, v) -> limiterMap.put(k, RateLimiter.create(v.getQpsThreshold())));
     }
 
     @Override
     public void register(String name, RateLimitingConfig.Config config) {
-        limiterMap.put(name, RateLimiter.create(config.getQpsThreshold()));
+        lock.lock();
+        try {
+            limiterMap.put(name, RateLimiter.create(config.getQpsThreshold()));
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
+    public void unregister(String name) {
+        lock.lock();
+        try {
+            limiterMap.remove(name);
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -44,7 +79,7 @@ public class GuavaRateLimitingClient implements RateLimitingClient {
         if ((rateLimiter = limiterMap.get(name)) != null) {
             return time <= 0 ? rateLimiter.tryAcquire() : rateLimiter.tryAcquire(time, timeUnit);
         } else {
-            log.warn("{} Can't find any rate limiter of {}!", LogPrefix.CICADA_WARN, name);
+            log.warn("Can't find any rate limiter of {}!", name);
         }
         return false;
     }
@@ -86,7 +121,7 @@ public class GuavaRateLimitingClient implements RateLimitingClient {
         if ((rateLimiter = limiterMap.get(name)) != null) {
             rateLimiter.acquire();
         } else {
-            log.warn("{} Can't find any rate limiter of {}!", LogPrefix.CICADA_WARN, name);
+            log.warn("Can't find any rate limiter of {}!", name);
         }
     }
 }

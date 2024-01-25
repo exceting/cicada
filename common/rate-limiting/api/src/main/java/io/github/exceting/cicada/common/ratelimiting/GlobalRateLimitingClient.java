@@ -4,6 +4,7 @@ import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingClient;
 import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingConfig;
 import io.github.exceting.cicada.common.ratelimiting.noop.NoopRateLimitingClient;
 
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -22,13 +23,18 @@ public class GlobalRateLimitingClient implements RateLimitingClient {
     }
 
     @Override
-    public void init(RateLimitingConfig config) {
-        internalClient.init(config);
+    public void rateLimitingConfig(Map<String, RateLimitingConfig.Config> configMap) {
+        internalClient.rateLimitingConfig(configMap);
     }
 
     @Override
     public void register(String name, RateLimitingConfig.Config config) {
         internalClient.register(name, config);
+    }
+
+    @Override
+    public void unregister(String name) {
+        internalClient.unregister(name);
     }
 
     @Override

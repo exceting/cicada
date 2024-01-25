@@ -1,20 +1,26 @@
 package io.github.exceting.cicada.common.circuitbreaker.noop;
 
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerClient;
-import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerConfig;
+import io.github.exceting.cicada.common.circuitbreaker.api.Config;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
- * When the implementation of {@link CircuitBreakerClient} cannot be found,
+ * When the implementation of {@link CircuitBreakerClient} can't be found,
  * use this class as the default implementation.
  */
 public class NoopCircuitBreakerClient implements CircuitBreakerClient {
 
     @Override
-    public void init(CircuitBreakerConfig config) {
+    public void globalConfig(Config config) {
+        // do nothing.
+    }
+
+    @Override
+    public void customConfig(Map<String, Config> custom) {
         // do nothing.
     }
 

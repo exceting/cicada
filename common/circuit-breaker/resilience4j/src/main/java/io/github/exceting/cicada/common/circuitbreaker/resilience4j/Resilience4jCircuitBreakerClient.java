@@ -1,49 +1,86 @@
 package io.github.exceting.cicada.common.circuitbreaker.resilience4j;
 
 import com.google.common.base.Preconditions;
-import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerConfig;
+import com.google.common.collect.Maps;
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerClient;
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerException;
+import io.github.exceting.cicada.common.circuitbreaker.api.Config;
+import io.github.exceting.cicada.common.logging.LogFormat;
 import io.github.exceting.cicada.common.logging.LogPrefix;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerOpenException;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Resilience4jCircuitBreakerClient implements CircuitBreakerClient {
 
-    private CircuitBreakerRegistry globalRegistry;
+    private CircuitBreakerRegistry circuitBreakerRegistry;
 
-    private Map<String, CircuitBreakerRegistry> breakerRegistryMap;
+    private final Lock lock = new ReentrantLock();
 
+    private Config globalConfig = new Config();
+
+    private Map<String, CircuitBreakerConfig> customConfig = null;
+
+    public Resilience4jCircuitBreakerClient() {
+        refreshRegistry(); // Init registry.
+    }
+
+    /**
+     * Init or refresh global config.
+     *
+     * @param config new config.
+     */
     @Override
-    public void init(CircuitBreakerConfig config) {
-        Preconditions.checkNotNull(config);
-        globalRegistry = CircuitBreakerRegistry.of(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
-                .enableAutomaticTransitionFromOpenToHalfOpen()
-                .failureRateThreshold(config.getGlobal().getErrorRate())
-                .ringBufferSizeInClosedState(config.getGlobal().getVolume())
-                .ringBufferSizeInHalfOpenState(config.getGlobal().getHalfOpenVolume())
-                .waitDurationInOpenState(Duration.ofMillis(config.getGlobal().getOpenDuration()))
-                .build());
-        if (config.getCustom() != null && !config.getCustom().isEmpty()) {
-            breakerRegistryMap = new HashMap<>();
-            config.getCustom().forEach((k, v) -> breakerRegistryMap.put(k,
-                    CircuitBreakerRegistry.of(io.github.resilience4j.circuitbreaker.CircuitBreakerConfig.custom()
-                            .enableAutomaticTransitionFromOpenToHalfOpen()
-                            .failureRateThreshold(v.getErrorRate())
-                            .ringBufferSizeInClosedState(v.getVolume())
-                            .ringBufferSizeInHalfOpenState(v.getHalfOpenVolume())
-                            .waitDurationInOpenState(Duration.ofMillis(v.getOpenDuration()))
-                            .build())));
+    public void globalConfig(Config config) {
+        lock.lock();
+        try {
+            this.globalConfig = config;
+            if (config == null) {
+                throw new IllegalArgumentException("Circuit breaker client global config is null!");
+            }
+            refreshRegistry();
+        } finally {
+            lock.unlock();
         }
     }
+
+    /**
+     * Init or refresh custom config.
+     *
+     * @param custom new custom configs.
+     */
+    @Override
+    public synchronized void customConfig(Map<String, Config> custom) {
+        lock.lock();
+        try {
+            if (custom != null && !custom.isEmpty()) {
+                Map<String, CircuitBreakerConfig> newConfig = Maps.newHashMap();
+                custom.forEach((k, v) -> newConfig.put(k, CircuitBreakerConfig.custom()
+                        .enableAutomaticTransitionFromOpenToHalfOpen()
+                        .failureRateThreshold(v.getErrorRate())
+                        .ringBufferSizeInClosedState(v.getVolume())
+                        .ringBufferSizeInHalfOpenState(v.getHalfOpenVolume())
+                        .waitDurationInOpenState(Duration.ofMillis(v.getOpenDuration()))
+                        .build()));
+                this.customConfig = newConfig;
+            } else {
+                this.customConfig = null;
+            }
+            refreshRegistry();
+        } finally {
+            lock.unlock();
+        }
+    }
+
 
     @Override
     public <T> T execute(String name, Callable<T> callable) throws Exception {
@@ -71,7 +108,7 @@ public class Resilience4jCircuitBreakerClient implements CircuitBreakerClient {
     public <T, R> R execute(String name, Function<T, R> function, T t) throws Exception {
         Preconditions.checkNotNull(name);
         if (!allowRequest(name)) {
-            throw new CircuitBreakerException(String.format("%s Function named %s is broken!", LogPrefix.CICADA_ERROR, name));
+            throw new CircuitBreakerException(LogFormat.error("Function named %s is broken!", name));
         }
         try {
             R r = function.apply(t);
@@ -123,13 +160,23 @@ public class Resilience4jCircuitBreakerClient implements CircuitBreakerClient {
     }
 
     private CircuitBreaker getBreakerByName(String name) {
-        if (globalRegistry == null) {
-            throw new IllegalStateException(String.format("%s The 'Resilience4jCircuitBreakerClient' is not initialized!", LogPrefix.CICADA_ERROR));
+        if (circuitBreakerRegistry == null) {
+            throw new IllegalStateException(LogFormat.error("The 'Resilience4jCircuitBreakerClient' is not initialized!"));
         }
-        CircuitBreakerRegistry custom;
-        if (breakerRegistryMap != null && (custom = breakerRegistryMap.get(name)) != null) {
-            return custom.circuitBreaker(name);
+        CircuitBreakerConfig custom;
+        if (customConfig != null && (custom = customConfig.get(name)) != null) {
+            return circuitBreakerRegistry.circuitBreaker(name, custom);
         }
-        return globalRegistry.circuitBreaker(name);
+        return circuitBreakerRegistry.circuitBreaker(name);
+    }
+
+    private void refreshRegistry() {
+        circuitBreakerRegistry = CircuitBreakerRegistry.of(CircuitBreakerConfig.custom()
+                .enableAutomaticTransitionFromOpenToHalfOpen()
+                .failureRateThreshold(globalConfig.getErrorRate())
+                .ringBufferSizeInClosedState(globalConfig.getVolume())
+                .ringBufferSizeInHalfOpenState(globalConfig.getHalfOpenVolume())
+                .waitDurationInOpenState(Duration.ofMillis(globalConfig.getOpenDuration()))
+                .build());
     }
 }

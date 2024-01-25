@@ -2,6 +2,7 @@ apply plugin: 'java-library'
 
 dependencies {
     implementation libs["slf4j"]
+    implementation libs["guava"]
     api project(":common:logging")
     api project(":common:rate-limiting:api")
     api libs['resilience4j-ratelimiter']

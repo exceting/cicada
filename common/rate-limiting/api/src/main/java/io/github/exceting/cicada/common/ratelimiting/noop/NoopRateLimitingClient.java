@@ -3,19 +3,26 @@ package io.github.exceting.cicada.common.ratelimiting.noop;
 import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingClient;
 import io.github.exceting.cicada.common.ratelimiting.api.RateLimitingConfig;
 
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class NoopRateLimitingClient implements RateLimitingClient {
+
     @Override
-    public void init(RateLimitingConfig config) {
+    public void rateLimitingConfig(Map<String, RateLimitingConfig.Config> configMap) {
         // do nothing.
     }
 
     @Override
     public void register(String name, RateLimitingConfig.Config config) {
+        // do nothing.
+    }
+
+    @Override
+    public void unregister(String name) {
         // do nothing.
     }
 

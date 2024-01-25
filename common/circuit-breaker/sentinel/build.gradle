@@ -5,4 +5,5 @@ dependencies {
     api project(":common:circuit-breaker:api")
     api project(":common:logging")
     api libs['sentinel']
+    api libs['guava']
 }

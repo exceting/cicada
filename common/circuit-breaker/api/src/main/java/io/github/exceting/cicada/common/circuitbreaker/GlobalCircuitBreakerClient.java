@@ -1,9 +1,10 @@
 package io.github.exceting.cicada.common.circuitbreaker;
 
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerClient;
-import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerConfig;
+import io.github.exceting.cicada.common.circuitbreaker.api.Config;
 import io.github.exceting.cicada.common.circuitbreaker.noop.NoopCircuitBreakerClient;
 
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.Callable;
 import java.util.function.Function;
@@ -15,14 +16,20 @@ public class GlobalCircuitBreakerClient implements CircuitBreakerClient {
 
     private final CircuitBreakerClient internalClient;
 
+
     private GlobalCircuitBreakerClient() {
         internalClient = ServiceLoader.load(CircuitBreakerClient.class)
                 .findFirst().orElseGet(NoopCircuitBreakerClient::new);
     }
 
     @Override
-    public void init(CircuitBreakerConfig config) {
-        internalClient.init(config);
+    public void globalConfig(Config config) {
+        internalClient.globalConfig(config);
+    }
+
+    @Override
+    public void customConfig(Map<String, Config> custom) {
+        internalClient.customConfig(custom);
     }
 
     @Override

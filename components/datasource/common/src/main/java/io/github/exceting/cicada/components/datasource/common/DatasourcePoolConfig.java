@@ -1,6 +1,6 @@
 package io.github.exceting.cicada.components.datasource.common;
 
-import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerConfig;
+import io.github.exceting.cicada.common.circuitbreaker.api.Config;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -45,7 +45,12 @@ public class DatasourcePoolConfig {
     private Long maxLifetime;
 
     /**
-     * The circuit breaker config of this pool.
+     * The global circuit breaker config of this pool.
      */
-    private CircuitBreakerConfig breaker;
+    private Config breakerGlobalConfig;
+
+    /**
+     * The custom circuit breaker config of this pool.
+     */
+    private Config breakerCustomConfig;
 }
