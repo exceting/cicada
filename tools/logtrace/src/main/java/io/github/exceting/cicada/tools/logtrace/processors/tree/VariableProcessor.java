@@ -9,7 +9,7 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import io.github.exceting.cicada.tools.logtrace.annos.VarLog;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.github.exceting.cicada.tools.logtrace.processors.TreeProcessor;
 
@@ -56,9 +56,9 @@ public class VariableProcessor extends TreeProcessor {
                 return;
             }
 
-            Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
+            LogTraceContext.MethodConfig methodConfig = LogTraceContext.currentMethodConfig.get();
             // Get current block.
-            Context.MethodConfig.OriginCode originCode = methodConfig.getBlockStack().peek();
+            LogTraceContext.MethodConfig.OriginCode originCode = methodConfig.getBlockStack().peek();
             if (originCode != null) {
                 JCTree.JCAnnotation anno = hit.get(0); // Get 1st.
                 boolean dur = false;
@@ -73,7 +73,7 @@ public class VariableProcessor extends TreeProcessor {
                         }
                     }
                 }
-                originCode.getVars().put(jcVariableDecl.getName().toString(), new Context.MethodConfig.VarConfig(dur));
+                originCode.getVars().put(jcVariableDecl.getName().toString(), new LogTraceContext.MethodConfig.VarConfig(dur));
 
                 attachVarLog(jcVariableDecl.getName().toString(), dur, methodConfig,
                         originCode, jcVariableDecl, getTreeMaker(), getNames());
@@ -81,8 +81,8 @@ public class VariableProcessor extends TreeProcessor {
         }
     }
 
-    static void attachVarLog(String varName, boolean dur, Context.MethodConfig methodConfig,
-                             Context.MethodConfig.OriginCode originCode,
+    static void attachVarLog(String varName, boolean dur, LogTraceContext.MethodConfig methodConfig,
+                             LogTraceContext.MethodConfig.OriginCode originCode,
                              JCTree jcTree, TreeMaker treeMaker, Names names) {
         Map<String, JCTree.JCExpression> newArgs = new LinkedHashMap<>();
         newArgs.put(varName, treeMaker.Ident(names.fromString(varName)));
@@ -101,7 +101,7 @@ public class VariableProcessor extends TreeProcessor {
                     treeMaker.TypeIdent(TypeTag.LONG),
                     nanoTimeInvocation);
 
-            originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset(), // Current line.
+            originCode.addNewCode(new LogTraceContext.MethodConfig.NewCode(originCode.getOffset(), // Current line.
                     jcStartTime));
 
             // Code: (System.nanoTime() - {a+UUID}) / 1000000L
@@ -110,7 +110,7 @@ public class VariableProcessor extends TreeProcessor {
                             nanoTimeInvocation, treeMaker.Ident(newParamName))),
                     treeMaker.Literal(1000000L)));
         }
-        originCode.addNewCode(new Context.MethodConfig.NewCode(originCode.getOffset() + 1, // Next line.
+        originCode.addNewCode(new LogTraceContext.MethodConfig.NewCode(originCode.getOffset() + 1, // Next line.
                 methodConfig.getLogContent()
                         .getNewCodeStatement(Tree.Kind.VARIABLE, jcTree,
                                 "", newArgs, treeMaker, names)));

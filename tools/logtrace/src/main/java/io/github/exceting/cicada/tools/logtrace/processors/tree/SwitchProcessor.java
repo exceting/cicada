@@ -5,7 +5,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.github.exceting.cicada.tools.logtrace.processors.TreeProcessor;
 
@@ -34,7 +34,7 @@ public class SwitchProcessor extends TreeProcessor {
             getFactory().get(jcSwitch.getExpression().getKind()).process(jcSwitch.getExpression());
         }
         if (jcSwitch.getCases() != null && jcSwitch.getCases().size() > 0) {
-            Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
+            LogTraceContext.MethodConfig methodConfig = LogTraceContext.currentMethodConfig.get();
             for (JCTree.JCCase jcCase : jcSwitch.getCases()) {
                 jcCase.accept(new JCTree.Visitor() {
                     @Override
@@ -42,7 +42,7 @@ public class SwitchProcessor extends TreeProcessor {
                         if (methodConfig.isOnlyVar()) {
                             return;
                         }
-                        that.stats = generateCode(jcCase.stats, new Context.MethodConfig.NewCode(0,
+                        that.stats = generateCode(jcCase.stats, new LogTraceContext.MethodConfig.NewCode(0,
                                 methodConfig.getLogContent()
                                         .getNewCodeStatement(Tree.Kind.SWITCH, jcCase,
                                                 String.format("Switch%s case %s is true!",

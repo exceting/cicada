@@ -4,11 +4,12 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.util.Position;
 import io.github.exceting.cicada.tools.logtrace.processors.custom.MethodProcessor;
 import io.github.exceting.cicada.tools.logtrace.processors.custom.ClassProcessor;
+import lombok.Getter;
 
 import javax.lang.model.element.Element;
 import java.util.*;
 
-public class Context {
+public class LogTraceContext {
 
     /**
      * The code line map.
@@ -48,30 +49,21 @@ public class Context {
     }
 
     public static class MethodConfig {
+        @Getter
         private final LogContent logContent;
 
+        @Getter
         private final boolean onlyVar;
 
         private boolean isInClassOrLambda = false;
 
+        @Getter
         private final Stack<OriginCode> blockStack = new Stack<>(); // Block stack.
 
         public MethodConfig(String methodName, Map<String, JCTree.JCExpression> argMap, String traceLevel,
                             boolean onlyVar, String mIsOpen) {
             this.logContent = new LogContent(methodName, traceLevel, mIsOpen, argMap);
             this.onlyVar = onlyVar;
-        }
-
-        public Stack<OriginCode> getBlockStack() {
-            return blockStack;
-        }
-
-        public LogContent getLogContent() {
-            return logContent;
-        }
-
-        public boolean isOnlyVar() {
-            return onlyVar;
         }
 
         public void setInClassOrLambda(boolean inClassOrLambda) {
@@ -97,11 +89,15 @@ public class Context {
             }
         }
 
+        @Getter
         public static class OriginCode {
             private int offset = 0;
-            // Need add to current block when pop stack.
+
+            // Need insert into current block when pop stack.
             private final List<NewCode> newCodes = new ArrayList<>();
+
             private final JCTree.JCBlock block;
+
             // The collection of all variables annotated by @VarLog in the current block.
             private final Map<String, VarConfig> vars = new LinkedHashMap<>();
 
@@ -117,23 +113,9 @@ public class Context {
                 newCodes.add(newCode);
             }
 
-            public int getOffset() {
-                return offset;
-            }
-
-            public JCTree.JCBlock getBlock() {
-                return block;
-            }
-
-            public List<NewCode> getNewCodes() {
-                return newCodes;
-            }
-
-            public Map<String, VarConfig> getVars() {
-                return vars;
-            }
         }
 
+        @Getter
         public static class NewCode {
             private final int offset;
             private final JCTree.JCStatement statement;
@@ -143,13 +125,6 @@ public class Context {
                 this.statement = statement;
             }
 
-            public int getOffset() {
-                return offset;
-            }
-
-            public JCTree.JCStatement getStatement() {
-                return statement;
-            }
         }
     }
 

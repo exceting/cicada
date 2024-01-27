@@ -5,7 +5,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.github.exceting.cicada.tools.logtrace.processors.TreeProcessor;
 
@@ -33,7 +33,7 @@ public class IfProcessor extends TreeProcessor {
         if (!(jcTree instanceof JCTree.JCIf) && !(jcTree instanceof JCTree.JCBlock)) {
             return;
         }
-        Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
+        LogTraceContext.MethodConfig methodConfig = LogTraceContext.currentMethodConfig.get();
         if (jcTree instanceof JCTree.JCIf) {
             JCTree.JCIf jcIf = (JCTree.JCIf) jcTree;
             if (jcIf.getThenStatement() != null) {
@@ -46,7 +46,7 @@ public class IfProcessor extends TreeProcessor {
                             if (methodConfig.isOnlyVar()) {
                                 return;
                             }
-                            that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0,
+                            that.stats = generateCode(that.getStatements(), new LogTraceContext.MethodConfig.NewCode(0,
                                     methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcIf,
                                             String.format("The condition: %s is true!", jcIf.getCondition()),
                                             null, getTreeMaker(), getNames())));
@@ -69,7 +69,7 @@ public class IfProcessor extends TreeProcessor {
                     if (methodConfig.isOnlyVar()) {
                         return;
                     }
-                    that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0,
+                    that.stats = generateCode(that.getStatements(), new LogTraceContext.MethodConfig.NewCode(0,
                             methodConfig.getLogContent().getNewCodeStatement(Tree.Kind.IF, jcTree,
                                     "The condition: else is true!",
                                     null, getTreeMaker(), getNames())));

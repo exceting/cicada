@@ -12,7 +12,6 @@ import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerClient;
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerException;
 import io.github.exceting.cicada.common.circuitbreaker.api.Config;
 import io.github.exceting.cicada.common.logging.LogFormat;
-import io.github.exceting.cicada.common.logging.LogPrefix;
 import io.github.exceting.cicada.common.logging.LoggerAdapter;
 import org.slf4j.Logger;
 
@@ -63,7 +62,7 @@ public class SentinelCircuitBreakerClient implements CircuitBreakerClient {
      * @param custom new custom configs.
      */
     @Override
-    public synchronized void customConfig(Map<String, Config> custom) {
+    public void customConfig(Map<String, Config> custom) {
         lock.lock();
         try {
             this.customConfig = custom;

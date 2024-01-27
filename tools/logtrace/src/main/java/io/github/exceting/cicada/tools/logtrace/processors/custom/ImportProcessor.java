@@ -7,7 +7,7 @@ import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.ListBuffer;
 import com.sun.tools.javac.util.Names;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.github.exceting.cicada.tools.logtrace.processors.TreeProcessor;
 
@@ -36,7 +36,7 @@ public class ImportProcessor extends TreeProcessor {
     public void process(JCTree... jcTrees) {
         if (jcTrees != null) {
 
-            final TreePath treePath = getJavacTrees().getPath(Context.currentElement.get());
+            final TreePath treePath = getJavacTrees().getPath(LogTraceContext.currentElement.get());
             final JCTree.JCCompilationUnit unitTree = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
 
             ListBuffer<JCTree> newDefs = new ListBuffer<>();

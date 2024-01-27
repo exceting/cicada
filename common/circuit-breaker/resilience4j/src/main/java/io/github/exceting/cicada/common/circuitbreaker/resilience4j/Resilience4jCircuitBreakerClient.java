@@ -6,7 +6,6 @@ import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerClient;
 import io.github.exceting.cicada.common.circuitbreaker.api.CircuitBreakerException;
 import io.github.exceting.cicada.common.circuitbreaker.api.Config;
 import io.github.exceting.cicada.common.logging.LogFormat;
-import io.github.exceting.cicada.common.logging.LogPrefix;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerConfig;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerOpenException;
@@ -59,7 +58,7 @@ public class Resilience4jCircuitBreakerClient implements CircuitBreakerClient {
      * @param custom new custom configs.
      */
     @Override
-    public synchronized void customConfig(Map<String, Config> custom) {
+    public void customConfig(Map<String, Config> custom) {
         lock.lock();
         try {
             if (custom != null && !custom.isEmpty()) {

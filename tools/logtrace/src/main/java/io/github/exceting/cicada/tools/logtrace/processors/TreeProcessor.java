@@ -5,7 +5,7 @@ import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.List;
 import com.sun.tools.javac.util.Names;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 
 import java.util.UUID;
 
@@ -51,17 +51,17 @@ public abstract class TreeProcessor {
      * @return The new method statements which contains new code.
      */
     public List<JCTree.JCStatement> generateCode(List<JCTree.JCStatement> stats,
-                                                 Context.MethodConfig.NewCode generated) {
+                                                 LogTraceContext.MethodConfig.NewCode generated) {
         return generateCode(stats, List.of(generated));
     }
 
     public List<JCTree.JCStatement> generateCode(List<JCTree.JCStatement> stats,
-                                                 java.util.List<Context.MethodConfig.NewCode> generated) {
+                                                 java.util.List<LogTraceContext.MethodConfig.NewCode> generated) {
         return generateCode(stats, List.from(generated));
     }
 
     public List<JCTree.JCStatement> generateCode(List<JCTree.JCStatement> stats,
-                                                 List<Context.MethodConfig.NewCode> generated) {
+                                                 List<LogTraceContext.MethodConfig.NewCode> generated) {
 
         if (generated == null || generated.size() == 0) {
             return stats;
@@ -70,7 +70,7 @@ public abstract class TreeProcessor {
         List<JCTree.JCStatement> result = List.nil();
         int offset = 0;
 
-        for (Context.MethodConfig.NewCode newCode : generated) {
+        for (LogTraceContext.MethodConfig.NewCode newCode : generated) {
             int newOffset = newCode.getOffset();
             while (offset < newOffset) {
                 result = result.append(stats.get(offset));

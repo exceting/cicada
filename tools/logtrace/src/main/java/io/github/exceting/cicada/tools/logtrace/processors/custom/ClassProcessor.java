@@ -10,7 +10,7 @@ import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 import io.github.exceting.cicada.tools.logtrace.annos.MethodLog;
 import io.github.exceting.cicada.tools.logtrace.annos.Slf4jCheck;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.github.exceting.cicada.tools.logtrace.processors.TreeProcessor;
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ public class ClassProcessor extends TreeProcessor {
 
     @Override
     public void process() {
-        Element e = Context.currentElement.get();
+        Element e = LogTraceContext.currentElement.get();
         JCTree jcTree = getJavacTrees().getTree(e);
         if (!(jcTree instanceof JCTree.JCClassDecl)) {
             return;
@@ -49,7 +49,7 @@ public class ClassProcessor extends TreeProcessor {
         JCTree.JCClassDecl classDecl = (JCTree.JCClassDecl) jcTree;
         final TreePath treePath = getJavacTrees().getPath(e);
         final JCTree.JCCompilationUnit unitTree = (JCTree.JCCompilationUnit) treePath.getCompilationUnit();
-        Context.lineMap.set(unitTree.getLineMap());
+        LogTraceContext.lineMap.set(unitTree.getLineMap());
         final List<JCTree.JCImport> imports = unitTree.getImports();
 
         getTreeMaker().pos = classDecl.pos; // Reset pos.
@@ -108,7 +108,7 @@ public class ClassProcessor extends TreeProcessor {
                                     getNames().fromString("class"))))));
         }
         // Init config.
-        Context.currentLogIdentName.set(logIdentName);
+        LogTraceContext.currentLogIdentName.set(logIdentName);
 
         // Filter out methods with @MethodLog annotation and process them.
         List<JCTree.JCMethodDecl> allNeedProcessMethods = classDecl.getMembers().stream().filter(Objects::nonNull).filter(def -> def instanceof JCTree.JCMethodDecl)
@@ -136,7 +136,7 @@ public class ClassProcessor extends TreeProcessor {
                     });
                 }
             }
-            Context.allIsOpenMap.set(isOpens);
+            LogTraceContext.allIsOpenMap.set(isOpens);
             allNeedProcessMethods.forEach(def -> getFactory().get(ProcessorFactory.Kind.METHOD).process(def));
         }
     }
@@ -150,7 +150,7 @@ public class ClassProcessor extends TreeProcessor {
         String cIsOpen = getAnnoAttrValue(slf4jCheck, SLF4J_IS_OPEN);
         if (cIsOpen != null) {
             isOpenNames.add(cIsOpen);
-            Context.classIsOpenFieldName.set(cIsOpen);
+            LogTraceContext.classIsOpenFieldName.set(cIsOpen);
         }
 
         methodDecls.forEach(m -> {

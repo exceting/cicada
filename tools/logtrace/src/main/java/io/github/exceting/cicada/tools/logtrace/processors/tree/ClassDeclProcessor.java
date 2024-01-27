@@ -4,7 +4,7 @@ import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
 import com.sun.tools.javac.util.Names;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.github.exceting.cicada.tools.logtrace.processors.TreeProcessor;
 
@@ -36,7 +36,7 @@ public class ClassDeclProcessor extends TreeProcessor {
         JCTree.JCClassDecl jcClassDecl = (JCTree.JCClassDecl) jcTree;
 
         if (jcClassDecl.getMembers() != null) {
-            Context.MethodConfig methodConfig = Context.currentMethodConfig.get();
+            LogTraceContext.MethodConfig methodConfig = LogTraceContext.currentMethodConfig.get();
             methodConfig.setInClassOrLambda(true);
             // Only process method.
             jcClassDecl.getMembers().stream()

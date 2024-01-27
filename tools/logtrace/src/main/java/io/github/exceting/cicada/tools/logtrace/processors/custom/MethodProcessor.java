@@ -11,7 +11,7 @@ import com.sun.tools.javac.util.Names;
 import com.sun.tools.javac.util.Name;
 import io.github.exceting.cicada.tools.logtrace.annos.Ban;
 import io.github.exceting.cicada.tools.logtrace.annos.MethodLog;
-import io.github.exceting.cicada.tools.logtrace.context.Context;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 import io.github.exceting.cicada.tools.logtrace.processors.TreeProcessor;
 
@@ -130,11 +130,11 @@ public class MethodProcessor extends TreeProcessor {
             }
         }
 
-        Context.MethodConfig methodConfig = new Context.MethodConfig(
+        LogTraceContext.MethodConfig methodConfig = new LogTraceContext.MethodConfig(
                 methodDecl.getName().toString(),
                 finalParamsMap, level, onlyVar, isOpen);
         //methodConfig.getBlockStack().push(new Context.MethodConfig.OriginCode(methodDecl.getBody()));
-        Context.currentMethodConfig.set(methodConfig);
+        LogTraceContext.currentMethodConfig.set(methodConfig);
 
 
         getFactory().get(methodDecl.getBody().getKind()).process(methodDecl.getBody());
@@ -207,7 +207,7 @@ public class MethodProcessor extends TreeProcessor {
         topVars.forEach(tv -> methodDecl.getBody().accept(new JCTree.Visitor() {
             @Override
             public void visitBlock(JCTree.JCBlock that) {
-                that.stats = generateCode(that.getStatements(), new Context.MethodConfig.NewCode(0, tv));
+                that.stats = generateCode(that.getStatements(), new LogTraceContext.MethodConfig.NewCode(0, tv));
             }
         }));
     }

@@ -33,7 +33,7 @@ public class LogContent {
         this.head = String.format("LOG_TRACE >>>>>> OUTPUT: [METHOD: %s]", methodName);
         this.traceLevel = traceLevel;
         this.mIsOpen = mIsOpen;
-        if (argMap != null && argMap.size() > 0) {
+        if (argMap != null && !argMap.isEmpty()) {
             processParams(paramContent, params, argMap);
         }
     }
@@ -51,25 +51,25 @@ public class LogContent {
                                                   String content,
                                                   Map<String, JCTree.JCExpression> newParams,
                                                   TreeMaker treeMaker, Names names, String traceLevel) {
-        Position.LineMap lineMap = Context.lineMap.get();
+        Position.LineMap lineMap = LogTraceContext.lineMap.get();
         JCTree.JCStatement statement = treeMaker.Exec(treeMaker.Apply(com.sun.tools.javac.util.List.nil(), treeMaker.Select(
-                        treeMaker.Ident(names.fromString(Context.currentLogIdentName.get())),
+                        treeMaker.Ident(names.fromString(LogTraceContext.currentLogIdentName.get())),
                         getSlf4jMethod(traceLevel == null ? this.traceLevel : traceLevel, names)),
                 com.sun.tools.javac.util.List.from(getLogParams(kind, lineMap.getLineNumber(jcTree.getStartPosition()),
                         content, newParams, treeMaker, names))));
 
-        Map<String, String> isOpens = Context.allIsOpenMap.get();
+        Map<String, String> isOpens = LogTraceContext.allIsOpenMap.get();
         if (isOpens == null) {
             return statement;
         }
         String isOpen = this.mIsOpen == null ? null : isOpens.get(this.mIsOpen);
-        if (isOpen == null || isOpen.equals("")) {
-            String cIsOpen = Context.classIsOpenFieldName.get();
+        if (isOpen == null || isOpen.isEmpty()) {
+            String cIsOpen = LogTraceContext.classIsOpenFieldName.get();
             if (cIsOpen != null) {
                 isOpen = isOpens.get(cIsOpen);
             }
         }
-        if (isOpen != null && !isOpen.equals("")) {
+        if (isOpen != null && !isOpen.isEmpty()) {
             statement = treeMaker.If(treeMaker.Apply(com.sun.tools.javac.util.List.nil(),
                             treeMaker.Select(treeMaker.Ident(names.fromString(isOpen)),
                                     names.fromString("get")), com.sun.tools.javac.util.List.nil()),
@@ -91,15 +91,15 @@ public class LogContent {
         StringBuilder currentParamContent = new StringBuilder(paramContent);
         LinkedList<JCTree.JCExpression> currentParams = new LinkedList<>(params);
 
-        if (newParams != null && newParams.size() > 0) {
-            if (currentParams.size() > 0) {
+        if (newParams != null && !newParams.isEmpty()) {
+            if (!currentParams.isEmpty()) {
                 currentParamContent.append(", ");
             }
             processParams(currentParamContent, currentParams, newParams);
         }
 
         LinkedList<JCTree.JCExpression> result = new LinkedList<>();
-        if (currentParams.size() > 0) {
+        if (!currentParams.isEmpty()) {
             sb.append(" Data: ").append(currentParamContent);
             result.add(treeMaker.NewArray(treeMaker.Ident(names.fromString("Object")),
                     com.sun.tools.javac.util.List.nil(),

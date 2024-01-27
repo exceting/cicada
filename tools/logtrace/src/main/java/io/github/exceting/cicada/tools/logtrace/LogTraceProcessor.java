@@ -6,11 +6,10 @@ import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Names;
 import io.github.exceting.cicada.tools.logtrace.annos.Slf4jCheck;
+import io.github.exceting.cicada.tools.logtrace.context.LogTraceContext;
 import io.github.exceting.cicada.tools.logtrace.processors.ProcessorFactory;
 
-import javax.annotation.processing.AbstractProcessor;
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.*;
 import javax.lang.model.element.Element;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.TypeElement;
@@ -22,7 +21,6 @@ public class LogTraceProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        this.processingEnv = processingEnv;
         Context context = ((JavacProcessingEnvironment) processingEnv).getContext();
         this.factory = new ProcessorFactory(JavacTrees.instance(processingEnv), TreeMaker.instance(context), Names.instance(context));
     }
@@ -51,10 +49,10 @@ public class LogTraceProcessor extends AbstractProcessor {
         for (TypeElement t : annotations) {
             for (Element e : roundEnv.getElementsAnnotatedWith(t)) {
                 try {
-                    io.github.exceting.cicada.tools.logtrace.context.Context.currentElement.set(e);
+                    LogTraceContext.currentElement.set(e);
                     factory.get(ProcessorFactory.Kind.CLASS).process();
                 } finally {
-                    io.github.exceting.cicada.tools.logtrace.context.Context.remove();
+                    LogTraceContext.remove();
                 }
             }
         }
