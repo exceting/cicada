@@ -1,0 +1,7 @@
+apply plugin: 'java-library'
+
+dependencies {
+    api libs['guava']
+    api libs['slf4j']
+    api project(":common:logging")
+}

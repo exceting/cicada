@@ -1,0 +1,11 @@
+apply plugin: 'java-library'
+
+dependencies {
+    //api project(":component:memcache")
+    api project(":common:stats")
+    api project(":common:logging")
+    //api project(':venus:context')
+    api libs["guava"]
+    api libs["caffeine-guava"]
+    api libs["javax-annotation"]
+}

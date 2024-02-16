@@ -51,14 +51,10 @@ configure(subprojects) { subProject ->
             sha256 = ""
         }
 
-        def libP = [':tools']
-        def isLib = libP.any { p ->
-            path.startsWith(p)
-        }
         tasks.withType(JavaCompile).tap {
             configureEach {
-                sourceCompatibility = isLib ? 1.8 : 11
-                targetCompatibility = isLib ? 1.8 : 11
+                sourceCompatibility = 11
+                targetCompatibility = 11
                 options.encoding = 'UTF-8'
             }
         }
