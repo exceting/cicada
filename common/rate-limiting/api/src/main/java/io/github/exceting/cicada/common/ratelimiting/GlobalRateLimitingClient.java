@@ -11,6 +11,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Global RateLimitingClient Proxy.
+ * @author buter
+ * @since 2023/12/25
+ */
 public class GlobalRateLimitingClient implements RateLimitingClient {
 
     public static final RateLimitingClient INSTANCE = new GlobalRateLimitingClient();

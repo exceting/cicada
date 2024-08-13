@@ -7,4 +7,6 @@ dependencies {
     implementation libs["logback"]
     implementation libs["guava"]
     implementation libs["spring-context"]
+    implementation libs["opentelemetry-api"]
+    implementation libs["opentelemetry-sdk-extension-autoconfigure"]
 }

@@ -10,6 +10,11 @@ import java.util.concurrent.Callable;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Global CircuitBreakerClient Proxy.
+ * @author buter
+ * @since 2023/12/25
+ */
 public class GlobalCircuitBreakerClient implements CircuitBreakerClient {
 
     public static final CircuitBreakerClient INSTANCE = new GlobalCircuitBreakerClient();
